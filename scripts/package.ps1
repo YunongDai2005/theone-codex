@@ -38,7 +38,7 @@ function New-TheOneWindowsArchive {
     Copy-Item -LiteralPath (Join-Path $ProjectRoot 'installer/install.cmd') -Destination (Join-Path $stage '安装 TheOne.cmd')
     Copy-Item -LiteralPath (Join-Path $ProjectRoot 'installer/uninstall.cmd') -Destination (Join-Path $stage '卸载 TheOne.cmd')
     Copy-Item -LiteralPath (Join-Path $ProjectRoot 'INSTALL.md') -Destination (Join-Path $stage 'INSTALL.md')
-    foreach ($relative in @('node','theone/node')) {
+    foreach ($relative in @('theone/node')) {
       $destination = Join-Path $stage $relative
       $null = New-Item -ItemType Directory -Path $destination -Force
       foreach ($file in @('node.exe','LICENSE')) { Copy-Item -LiteralPath (Join-Path $RuntimeRoot $file) -Destination (Join-Path $destination $file) }
@@ -49,11 +49,21 @@ function New-TheOneWindowsArchive {
     $instructions = "先完整解压到一个文件夹，不要在压缩包里直接运行。`r`n双击「安装 TheOne.cmd」，无需另装 Node。`r`n安装后完全退出 Codex，再从「Codex TheOne」快捷方式启动；仅安装插件时重启 Codex 即可。`r`n卸载请双击「卸载 TheOne.cmd」，话题数据默认保留。`r`n出错时保留窗口中的原因和处理方法；详细说明见 INSTALL.md。`r`n"
     [IO.File]::WriteAllText((Join-Path $stage '安装说明.txt'), $instructions, [Text.UTF8Encoding]::new($true))
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [IO.Compression.ZipFile]::CreateFromDirectory($stage, $temporaryZip)
+    # Forward slashes and UTF-8 names, so Chinese file names survive on any system and in any unzip tool.
+    Add-Type -AssemblyName System.IO.Compression
+    $zipStream = [IO.File]::Open($temporaryZip, [IO.FileMode]::CreateNew)
+    $writer = [IO.Compression.ZipArchive]::new($zipStream, [IO.Compression.ZipArchiveMode]::Create, $false, [Text.Encoding]::UTF8)
+    try {
+      $base = (Resolve-Path -LiteralPath $stage).Path.TrimEnd([char]92) + [char]92
+      foreach ($file in Get-ChildItem -LiteralPath $stage -Recurse -File -Force) {
+        $name = $file.FullName.Substring($base.Length).Replace([char]92, [char]47)
+        $null = [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($writer, $file.FullName, $name, [IO.Compression.CompressionLevel]::Optimal)
+      }
+    } finally { $writer.Dispose(); $zipStream.Dispose() }
     $archive = [IO.Compression.ZipFile]::OpenRead($temporaryZip)
     try {
       $entries = @($archive.Entries.FullName -replace '\\', '/')
-      $required = @('安装 TheOne.cmd','卸载 TheOne.cmd','安装说明.txt','INSTALL.md','installer/install.mjs','node/node.exe','node/LICENSE','.agents/plugins/marketplace.json','theone/plugin.json','theone/.codex-plugin/plugin.json','theone/mcp.json','theone/.mcp.json','theone/node/node.exe','theone/node/LICENSE','theone/server/main.mjs','theone/ui/theone.html','theone/skills/theone/SKILL.md','theone/LICENSE','theone/THIRD_PARTY_NOTICES.txt','client-adapter/patches.mjs','client-adapter/build.mjs','client-adapter/install-launcher.mjs','client-adapter/archive.mjs')
+      $required = @('安装 TheOne.cmd','卸载 TheOne.cmd','安装说明.txt','INSTALL.md','installer/install.mjs','.agents/plugins/marketplace.json','theone/plugin.json','theone/.codex-plugin/plugin.json','theone/mcp.json','theone/.mcp.json','theone/node/node.exe','theone/node/LICENSE','theone/server/main.mjs','theone/ui/theone.html','theone/skills/theone/SKILL.md','theone/LICENSE','theone/THIRD_PARTY_NOTICES.txt','client-adapter/patches.mjs','client-adapter/build.mjs','client-adapter/install-launcher.mjs','client-adapter/archive.mjs')
       foreach ($name in $required) { if ($entries -notcontains $name) { throw "Missing packaged file: $name" } }
     } finally { $archive.Dispose() }
     if (Test-Path -LiteralPath $archivePath) { Remove-Item -LiteralPath $archivePath }

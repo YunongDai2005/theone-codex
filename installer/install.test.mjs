@@ -199,3 +199,30 @@ test('legacy shortcut migration uses the old registered source even after a fail
   assert.ok(old, 'Old shortcut ownership must survive removal of the legacy plugin')
   assert.equal(old.packageRoot, result.packageRoot, 'Use the new side-effect-free remover, not the old install script')
 })
+
+test('a dev install whose release folder was renamed still migrates: config key theone-local, listed as theone-codex', async t => {
+  // The machine this was found on: config.toml registers <repo>/release as theone-local, the rebuilt
+  // folder now names itself theone-codex, so the old plugin no longer resolves in plugin list.
+  const f = await fixture(t)
+  const release = join(f.root, 'legacy-project/release')
+  await mkdir(join(release, '.agents/plugins'), { recursive: true })
+  await writeFile(join(release, '.agents/plugins/marketplace.json'), JSON.stringify({ name: 'theone-codex', plugins: [{ name: 'theone' }] }))
+  await mkdir(f.env.CODEX_HOME, { recursive: true })
+  await writeFile(join(f.env.CODEX_HOME, 'config.toml'), `[plugins."gpt-theone@theone-local"]\nenabled = true\n\n[marketplaces.theone-local]\nsource_type = "local"\nsource = '\\?\${release}'\n`)
+  const configured = new Set(['theone-local']), removed = []
+  f.markets.add('theone-codex') // what plugin marketplace list shows: the folder's own name
+  const run = f.deps.run
+  f.deps.run = async (command, args) => {
+    if (args[1] === 'remove' && args[2] === 'gpt-theone@theone-local') { f.calls.push(args); throw Object.assign(Error('Command failed'), { stderr: 'Error: plugin `gpt-theone@theone-local` is not installed' }) }
+    if (args[1] === 'marketplace' && args[2] === 'remove') {
+      f.calls.push(args)
+      if (!configured.delete(args[3])) throw Object.assign(Error('Command failed'), { stderr: `Error: marketplace \`${args[3]}\` is not configured or installed` })
+      removed.push(args[3]); f.markets.delete('theone-codex'); return '{}'
+    }
+    return run(command, args)
+  }
+  const result = await module.install({ payload: f.payload }, f.deps)
+  assert.deepEqual(removed, ['theone-local'])
+  assert.ok(f.installed.has('theone@theone-codex'))
+  assert.ok(result.packageRoot)
+})

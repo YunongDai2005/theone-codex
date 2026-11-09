@@ -16,7 +16,7 @@ const directories = async path => {
   try { return (await readdir(path, { withFileTypes: true })).filter(e => e.isDirectory()).map(e => join(path, e.name)) }
   catch (error) { if (error.code === 'ENOENT') return []; throw error }
 }
-const runProcess = async (command, args) => (await promisify(execFile)(command, args, { encoding: 'utf8', windowsHide: true, timeout: 120000, maxBuffer: 8 * 1024 * 1024 })).stdout
+const runProcess = async (command, args, env = process.env) => (await promisify(execFile)(command, args, { env, encoding: 'utf8', windowsHide: true, timeout: 120000, maxBuffer: 8 * 1024 * 1024 })).stdout
 
 // Prefer an executable; npm's .cmd shim is replaced by its JS entrypoint, never a shell command string.
 export async function findCodex(env = process.env) {
@@ -39,7 +39,7 @@ export async function findCodex(env = process.env) {
 function dependencies(overrides) {
   const env = overrides.env ?? process.env
   return {
-    env, platform: process.platform, log: console.log, run: runProcess,
+    env, platform: process.platform, log: console.log, run: (command, args) => runProcess(command, args, env),
     findCodex: () => findCodex(env),
     findDesktop: async () => {
       const output = await runProcess('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
@@ -76,14 +76,48 @@ async function cliFor(deps) {
   if (!found) throw Error('未找到 Codex。请先安装或更新 Codex 桌面版/CLI，再重新运行安装程序。')
   return args => deps.run(found.command, [...(found.args ?? []), ...args])
 }
-async function inventory(cli) {
+// Registrations as config.toml names them. A marketplace's listed name comes from its own
+// marketplace.json, which a rebuilt folder can change, but removal needs the config key.
+export function codexConfigEntries(text) {
+  const markets = new Map(), plugins = new Set()
+  let market = null
+  for (const line of text.split(/\r?\n/)) {
+    const header = line.match(/^\s*\[(.+)\]\s*$/)
+    if (header) {
+      const name = header[1].trim(), plugin = name.match(/^plugins\."([^"]+)"$/), key = name.match(/^marketplaces\.(?:"([^"]+)"|([A-Za-z0-9_.-]+))$/)
+      if (plugin) plugins.add(plugin[1])
+      market = key ? key[1] ?? key[2] : null
+      if (market) markets.set(market, null)
+      continue
+    }
+    const source = market && line.match(/^\s*source\s*=\s*(['"])(.+)\1\s*$/)
+    if (source) markets.set(market, source[2].replace(/^\\\\\?\\/, ''))
+  }
+  return { markets, plugins }
+}
+async function theoneMarkets(markets) {
+  const keys = []
+  for (const [key, source] of markets) {
+    if (key === 'theone-local' || key === 'theone-codex') { keys.push(key); continue }
+    const manifest = source ? await optionalJson(join(source, '.agents/plugins/marketplace.json')).catch(() => null) : null
+    if (manifest?.plugins?.some(p => p?.name === 'gpt-theone' || p?.name === 'theone')) keys.push(key)
+  }
+  return keys
+}
+const gone = error => /not (configured|installed|found)|does not exist|unknown (plugin|marketplace)/i.test(String(error?.stderr ?? '') + String(error?.message ?? ''))
+async function tolerant(cli, args) { try { await cli(args) } catch (error) { if (!gone(error)) throw error } }
+async function inventory(cli, codexHome) {
   const plugins = JSON.parse(await cli(['plugin', 'list', '--json']))
   const markets = JSON.parse(await cli(['plugin', 'marketplace', 'list', '--json']))
   const rows = Array.isArray(markets) ? markets : markets.marketplaces
   if (!Array.isArray(plugins.installed) || !Array.isArray(rows) || rows.some(m => typeof m.name !== 'string')) throw Error('无法识别 Codex 插件清单格式；请更新 Codex。')
   const legacyWorkspaces = plugins.installed.filter(p => p.pluginId === LEGACY && p.source?.source === 'local' && typeof p.source.path === 'string' && isAbsolute(p.source.path) && /[\\/]release[\\/]gpt-theone$/i.test(p.source.path))
     .map(p => resolve(p.source.path, '..', '..'))
-  return { plugins: new Set(plugins.installed.map(p => p.pluginId)), markets: new Set(rows.map(m => m.name)), legacyWorkspaces }
+  const config = codexConfigEntries(await readFile(join(codexHome, 'config.toml'), 'utf8').catch(error => { if (error.code === 'ENOENT') return ''; throw error }))
+  const ours = await theoneMarkets(config.markets)
+  // A legacy dev install registered <repo>/release as theone-local; that repo owns the old shortcut.
+  for (const key of ours) { const source = config.markets.get(key); if (key === 'theone-local' && source && /[\\/]release$/i.test(source)) legacyWorkspaces.push(resolve(source, '..')) }
+  return { plugins: new Set([...plugins.installed.map(p => p.pluginId), ...config.plugins]), markets: new Set([...ours, ...rows.map(m => m.name).filter(name => name === 'theone-local' || name === 'theone-codex')]), legacyWorkspaces }
 }
 async function hasData(path) { for (const name of ['topics.db', 'runtime.db', 'tasks.db']) if (await exists(join(path, name))) return true; return false }
 export async function resolveDataDirectory({ env, home, codexHome, state }) {
@@ -114,12 +148,12 @@ async function validatePayload(payload) {
   const manifest = await json(join(payload, 'theone/plugin.json'))
   const market = await json(join(payload, '.agents/plugins/marketplace.json'))
   if (manifest.name !== 'theone' || !/^\d+\.\d+\.\d+$/.test(manifest.version) || market.name !== 'theone-codex') throw Error('安装包标识或版本不正确，请重新下载官方 Windows zip。')
-  for (const path of ['node/node.exe', 'theone/node/node.exe', 'theone/server/main.mjs', 'theone/.mcp.json', 'client-adapter/build.mjs', 'client-adapter/install-launcher.mjs', 'client-adapter/patches.mjs']) await access(join(payload, path))
+  for (const path of ['theone/node/node.exe', 'theone/server/main.mjs', 'theone/.mcp.json', 'client-adapter/build.mjs', 'client-adapter/install-launcher.mjs', 'client-adapter/patches.mjs']) await access(join(payload, path))
   return manifest
 }
-async function removeRegistration(cli, listing, id, market) {
-  if (listing.plugins.has(id)) await cli(['plugin', 'remove', id, '--json'])
-  if (listing.markets.has(market)) await cli(['plugin', 'marketplace', 'remove', market, '--json'])
+async function removeRegistrations(cli, listing) {
+  for (const id of [LEGACY, PLUGIN]) if (listing.plugins.has(id)) await tolerant(cli, ['plugin', 'remove', id, '--json'])
+  for (const key of listing.markets) await tolerant(cli, ['plugin', 'marketplace', 'remove', key, '--json'])
 }
 function contained(root, target) {
   const rel = relative(resolve(root), resolve(target))
@@ -150,7 +184,7 @@ export async function install({ payload = resolve(dirname(fileURLToPath(import.m
   const cli = await step(deps, '检查 Codex 是否已安装', () => cliFor(deps))
   const manifest = await step(deps, '检查安装包完整性', () => validatePayload(payload))
   const previous = await optionalJson(p.stateFile)
-  const listing = await step(deps, '读取 Codex 插件清单', () => inventory(cli))
+  const listing = await step(deps, '读取 Codex 插件清单', () => inventory(cli, p.codexHome))
   const dataDir = await step(deps, '确认并保留话题数据目录', () => resolveDataDirectory({ ...p, env: deps.env, state: previous }))
   await validateDataLocation(p, dataDir)
   const packages = [...(previous?.packages ?? [])]
@@ -159,7 +193,7 @@ export async function install({ payload = resolve(dirname(fileURLToPath(import.m
   const legacyWorkspaces = [...new Set([...(previous?.legacyWorkspaces ?? []), ...listing.legacyWorkspaces])]
   const state = { version: manifest.version, dataDir, packageRoot, packages: [...packages, packageRoot], legacyWorkspaces, desktop: 'pending', runtimeLaunchVerified: false }
   await step(deps, '复制到稳定安装目录', async () => {
-    for (const path of ['theone', 'node', '.agents', 'client-adapter', 'installer']) await cp(join(payload, path), join(packageRoot, path), { recursive: true })
+    for (const path of ['theone', '.agents', 'client-adapter', 'installer']) await cp(join(payload, path), join(packageRoot, path), { recursive: true })
     for (const name of ['mcp.json', '.mcp.json']) {
       const path = join(packageRoot, 'theone', name), config = await json(path)
       config.mcpServers.theone.command = './node/node.exe'
@@ -168,8 +202,7 @@ export async function install({ payload = resolve(dirname(fileURLToPath(import.m
     }
     await save(p.stateFile, state) // Persist before removing the old identity; a retry must retain this choice.
   })
-  await step(deps, '迁移旧插件（话题数据原位保留）', () => removeRegistration(cli, listing, LEGACY, 'theone-local'))
-  await step(deps, '更新已有 TheOne 插件注册', () => removeRegistration(cli, listing, PLUGIN, 'theone-codex'))
+  await step(deps, '迁移旧插件和旧插件源（话题数据原位保留）', () => removeRegistrations(cli, listing))
   await step(deps, '注册 TheOne 插件源', () => cli(['plugin', 'marketplace', 'add', packageRoot]))
   await step(deps, '安装插件', () => cli(['plugin', 'add', PLUGIN]))
   await step(deps, '验证插件已启用', async () => {
@@ -208,7 +241,7 @@ export async function uninstall({ deleteData = false } = {}, overrides = {}) {
   const deps = dependencies(overrides), p = paths(deps)
   const cli = await step(deps, '检查 Codex 是否已安装', () => cliFor(deps))
   const state = await optionalJson(p.stateFile)
-  const listing = await step(deps, '读取 Codex 插件清单', () => inventory(cli))
+  const listing = await step(deps, '读取 Codex 插件清单', () => inventory(cli, p.codexHome))
   const dataDir = state?.dataDir ?? await resolveDataDirectory({ ...p, env: deps.env })
   await validateDataLocation(p, dataDir)
   for (const packageRoot of state?.packages ?? []) {
@@ -216,8 +249,7 @@ export async function uninstall({ deleteData = false } = {}, overrides = {}) {
     if (await exists(packageRoot)) contained(await realpath(join(p.root, 'packages')), await realpath(packageRoot))
   }
   await step(deps, '移除 TheOne 插件与插件源', async () => {
-    await removeRegistration(cli, listing, PLUGIN, 'theone-codex')
-    await removeRegistration(cli, listing, LEGACY, 'theone-local')
+    await removeRegistrations(cli, listing)
   })
   await step(deps, '移除快捷方式与客户端副本', async () => {
     for (const packageRoot of state?.packages ?? []) {

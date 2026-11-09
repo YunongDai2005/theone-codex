@@ -52,7 +52,7 @@ try {
   $reader = [IO.Compression.ZipFile]::OpenRead($zip)
   try {
     $entries = @($reader.Entries.FullName -replace '\\', '/')
-    foreach ($name in @('node/node.exe','theone/node/node.exe','theone/node/LICENSE','installer/install.mjs','client-adapter/patches.mjs','.agents/plugins/marketplace.json','安装 TheOne.cmd','卸载 TheOne.cmd','安装说明.txt')) {
+    foreach ($name in @('theone/node/node.exe','theone/node/LICENSE','installer/install.mjs','client-adapter/patches.mjs','.agents/plugins/marketplace.json','安装 TheOne.cmd','卸载 TheOne.cmd','安装说明.txt')) {
       if ($entries -notcontains $name) { throw "Missing payload entry: $name" }
     }
     $entry = $reader.Entries | Where-Object { ($_.FullName -replace '\\', '/') -eq 'theone/.mcp.json' }
