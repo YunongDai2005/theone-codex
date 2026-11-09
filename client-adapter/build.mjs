@@ -3,11 +3,14 @@ import { dirname, join, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { readArchiveFile, rewriteArchive, updateIntegrityResource } from './archive.mjs'
-import { patchRenderer, RENDERER_PATH, ADAPTER_VERSION } from './renderer-patch.mjs'
-import { patchSendRenderer, SEND_RENDERER_PATH } from './send-patch.mjs'
 
-const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const installed = 'C:/Program Files/WindowsApps/OpenAI.Codex_26.1103.4239.0_x64__2p2nqsd0c76g0/app'
+export async function buildClient({ workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..'), installed = 'C:/Program Files/WindowsApps/OpenAI.Codex_26.1103.4239.0_x64__2p2nqsd0c76g0/app', patches } = {}) {
+if (!patches) {
+  let packaged = false
+  try { await access(new URL('./patches.mjs', import.meta.url)); packaged = true } catch (error) { if (error.code !== 'ENOENT') throw error }
+  patches = packaged ? await import('./patches.mjs') : { ...await import('./renderer-patch.mjs'), ...await import('./send-patch.mjs') }
+}
+const { patchRenderer, RENDERER_PATH, ADAPTER_VERSION, patchSendRenderer, SEND_RENDERER_PATH } = patches
 const destination = join(workspace, '.theone', 'desktop-client', `26.1103.4239.0-theone-${ADAPTER_VERSION}`, 'app')
 const sourceArchive = join(installed, 'resources', 'app.asar')
 const sourceExe = join(installed, 'ChatGPT.exe')
@@ -47,6 +50,12 @@ const report = {
   runtimeLaunchVerified: false, desktopVisualVerified: false,
 }
 await writeFile(join(dirname(destination), 'build.json'), JSON.stringify(report, null, 2) + '\n')
+await mkdir(join(workspace, 'evidence'), { recursive: true })
 await writeFile(join(workspace, 'evidence', 'client-adapter-build.json'), JSON.stringify(report, null, 2) + '\n')
 await writeFile(join(dirname(destination), 'renderer-check.mjs'), patchedRenderer)
 console.log(JSON.stringify({ clientApp: destination, archiveHeaderHash: archive.headerHash, originalClientPreserved: true }))
+
+return report
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await buildClient()

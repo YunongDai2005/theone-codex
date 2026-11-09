@@ -6,15 +6,15 @@ import { createHash } from 'node:crypto'
 import assert from 'node:assert/strict'
 
 const app = new AppServer({ requestTimeoutMs: 30000 })
-const manifest = JSON.parse(await readFile('release/gpt-theone/plugin.json', 'utf8'))
+const manifest = JSON.parse(await readFile('release/theone/plugin.json', 'utf8'))
 try {
   await app.connect()
-  const { plugin } = await app.request('plugin/read', { pluginName: 'gpt-theone', marketplacePath: resolve('release/.agents/plugins/marketplace.json') })
+  const { plugin } = await app.request('plugin/read', { pluginName: 'theone', marketplacePath: resolve('release/.agents/plugins/marketplace.json') })
   assert.equal(plugin.summary.installed, true)
   assert.equal(plugin.summary.enabled, true)
   assert.equal(plugin.summary.localVersion, manifest.version)
-  const installedRoot = join(process.env.CODEX_HOME ?? join(homedir(), '.codex'), 'plugins/cache/theone-local/gpt-theone', manifest.version)
-  const shippedHash = createHash('sha256').update(await readFile('release/gpt-theone/server/main.mjs')).digest('hex')
+  const installedRoot = join(process.env.CODEX_HOME ?? join(homedir(), '.codex'), 'plugins/cache/theone-codex/theone', manifest.version)
+  const shippedHash = createHash('sha256').update(await readFile('release/theone/server/main.mjs')).digest('hex')
   const installedHash = createHash('sha256').update(await readFile(join(installedRoot, 'server/main.mjs'))).digest('hex')
   assert.equal(installedHash, shippedHash)
   const { thread } = await app.request('thread/start', { cwd: process.cwd(), sandbox: 'read-only', approvalPolicy: 'on-request', ephemeral: true })
@@ -46,7 +46,7 @@ try {
   assert.equal(resource.contents[0].mimeType, 'text/html;profile=mcp-app')
   assert.ok(resource.contents[0].text.length > 1000)
   const htmlHash = createHash('sha256').update(await readFile(join(installedRoot, 'ui/theone.html'))).digest('hex')
-  assert.equal(htmlHash, createHash('sha256').update(await readFile('release/gpt-theone/ui/theone.html')).digest('hex'))
+  assert.equal(htmlHash, createHash('sha256').update(await readFile('release/theone/ui/theone.html')).digest('hex'))
   const report = { at: new Date().toISOString(), scope: 'actual-local-user', installed: true, enabled: true, version: plugin.summary.localVersion, installedRoot,
     bundleSha256: installedHash, uiSha256: htmlHash, nativeToolCount: Object.keys(server.tools).length, nativeMcpCallPassed: true, nativeSidebarEntrypoint: true, nativeThreadEntrypoint: true, nativeResourceReadPassed: true, nativeOpenPassed: true,
     desktopStateToolVerified: true, historyToolsVerified: true, historyConsent: history.structuredContent.result.consent,

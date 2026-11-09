@@ -1,0 +1,44 @@
+name: Windows release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - name: Check tag and package versions
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw -Encoding UTF8 | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag must match package.json version' }
+          foreach ($file in @('plugin/plugin.json', 'plugin/.codex-plugin/plugin.json')) {
+            if ((Get-Content $file -Raw -Encoding UTF8 | ConvertFrom-Json).version -ne $version) { throw "Version mismatch: $file" }
+          }
+      - run: npm ci
+      - run: npm run check
+      - run: npm run package:test
+      - run: npm run client:payload
+      - name: Package plugin, installer and verified portable Node
+        shell: pwsh
+        run: ./scripts/package.ps1 -SkipBuild
+      - name: Upload Windows zip and SHA256 to GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content package.json -Raw -Encoding UTF8 | ConvertFrom-Json).version
+          $zip = "release/TheOne-for-Codex-$version-windows.zip"
+          gh release view $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY --verify-tag --title "TheOne for Codex $version" --generate-notes
+            if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
+          }
+          gh release upload $env:GITHUB_REF_NAME $zip "$zip.sha256" --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }

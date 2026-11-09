@@ -4,7 +4,7 @@
 
 ## 使用
 
-桌面快捷方式为 **Codex TheOne**，也可以运行项目根目录的 `启动 TheOne Codex.vbs`。
+公开 Windows 安装包会在用户机器上生成适配副本并建立 **Codex TheOne** 快捷方式，详细步骤见 [INSTALL.md](../INSTALL.md)。副本位于 `%LOCALAPPDATA%\TheOne\packages\<version>-<unique>\` 下；桌面版本不匹配时只安装插件。开发者仍可使用项目根目录的 `启动 TheOne Codex.vbs`。
 
 1. 从「文件」菜单完全退出当前 Codex，包括旧版 TheOne。
 2. 双击桌面「Codex TheOne」。

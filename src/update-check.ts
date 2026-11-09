@@ -23,7 +23,7 @@ export class ReleaseChecker {
   private checkedAt?: number
   private result: AvailableRelease | null = null
   private pending?: Promise<AvailableRelease | null>
-  constructor(private current: string, private fetcher: typeof fetch = fetch) {}
+  constructor(private current = '0.1.0', private fetcher: typeof fetch = fetch) {}
   check(force = false): Promise<AvailableRelease | null> {
     if (this.pending) return this.pending
     if (!force && this.checkedAt !== undefined && Date.now() - this.checkedAt < 6 * 3600000) return Promise.resolve(this.result)
@@ -39,7 +39,7 @@ export class ReleaseChecker {
       if (release.draft || typeof release.tag_name !== 'string' || release.tag_name.length > 100 || !newerRelease(release.tag_name, this.current)) return this.result = null
       return this.result = { version: release.tag_name.replace(/^v/, ''),
         url: 'https://github.com/YunongDai2005/theone-codex/releases/tag/' + encodeURIComponent(release.tag_name),
-        command: 'codex plugin marketplace upgrade theone-codex\ncodex plugin add theone@theone-codex' }
+        command: '下载最新 Windows 安装包并重新运行安装程序；macOS/Linux 请按 INSTALL.md 重新构建并安装。' }
     } catch { return this.result = null }
   }
 }

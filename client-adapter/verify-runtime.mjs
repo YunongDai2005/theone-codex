@@ -21,7 +21,7 @@ if (!historyMode) {
 }
 await fixture.close()
 const fixtureClient = new Client({ name: 'desktop-fixture', version: '1' })
-await fixtureClient.connect(new StdioClientTransport({ command: process.execPath, args: historyMode ? ['--import', 'tsx', resolve('tests/fixtures/history-mcp.ts')] : [resolve('release/gpt-theone/server/main.mjs')], env: { ...process.env, THEONE_DATA_DIR: testData }, stderr: 'pipe' }))
+await fixtureClient.connect(new StdioClientTransport({ command: process.execPath, args: historyMode ? ['--import', 'tsx', resolve('tests/fixtures/history-mcp.ts')] : [resolve('release/theone/server/main.mjs')], env: { ...process.env, THEONE_DATA_DIR: testData }, stderr: 'pipe' }))
 await unlink(join(profile, 'DevToolsActivePort')).catch(error => { if (error.code !== 'ENOENT') throw error })
 const child = spawn(join(build.clientApp, 'ChatGPT.exe'), [
   `--user-data-dir=${profile}`, '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0',

@@ -3,13 +3,13 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 
-const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+export async function installLauncher({ workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..'), requireRuntimeProof = true, run = execFileSync } = {}) {
 const build = JSON.parse(await readFile(join(workspace, 'evidence/client-adapter-build.json'), 'utf8'))
-const runtime = JSON.parse(await readFile(join(workspace, 'evidence/client-adapter-runtime.json'), 'utf8'))
+const runtime = requireRuntimeProof ? JSON.parse(await readFile(join(workspace, 'evidence/client-adapter-runtime.json'), 'utf8')) : null
 const executable = await realpath(join(build.clientApp, 'ChatGPT.exe'))
 const clientRoot = await realpath(join(workspace, '.theone/desktop-client'))
 if (!executable.toLowerCase().startsWith(clientRoot.toLowerCase() + '\\')) throw new Error('Client is outside the local build directory')
-if (runtime.executable !== executable || runtime.error || !runtime.nativeDraftVerified || !runtime.adjacentToNewChat || !runtime.nativeMcpTopicDirectoryVerified || !runtime.nativeSettingsVerified) {
+if (requireRuntimeProof && (runtime.executable !== executable || runtime.error || !runtime.nativeDraftVerified || !runtime.adjacentToNewChat || !runtime.nativeMcpTopicDirectoryVerified || !runtime.nativeSettingsVerified)) {
   throw new Error('Verify this exact client build before installing its launcher')
 }
 
@@ -32,7 +32,7 @@ If Not fs.FileExists(clientExe) Then
     WScript.Echo "missing-client"
     WScript.Quit 1
   End If
-  MsgBox "找不到 TheOne 客户端副本。请保留 gpt-theone 项目目录，或重新构建客户端适配。", 48, "Codex TheOne"
+  MsgBox "找不到 TheOne 客户端副本。请重新运行 TheOne 安装程序。", 48, "Codex TheOne"
   WScript.Quit 1
 End If
 Set processes = GetObject("winmgmts:\\\\.\\root\\cimv2").ExecQuery("SELECT ExecutablePath FROM Win32_Process WHERE Name='ChatGPT.exe'")
@@ -79,8 +79,30 @@ $shortcut.Save()
 $verified = $shellObject.CreateShortcut($shortcutPath)
 @{ shortcut=$shortcutPath; target=$verified.TargetPath; arguments=$verified.Arguments; originalClientPreserved=$true } | ConvertTo-Json -Compress
 `
-const output = execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', powershell], { encoding: 'utf8', windowsHide: true })
+const output = await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', powershell], { encoding: 'utf8', windowsHide: true })
 const shortcut = JSON.parse(output.trim())
 const report = { installedAt: new Date().toISOString(), adapterVersion: build.adapterVersion, launcher, executable, ...shortcut, launched: false }
 await writeFile(join(workspace, 'evidence/client-adapter-install.json'), JSON.stringify(report, null, 2) + '\n')
 console.log(JSON.stringify(report, null, 2))
+
+return report
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await installLauncher()
+
+export async function removeLauncher({ workspace, run = execFileSync }) {
+  const psString = value => "'" + value.replaceAll("'", "''") + "'"
+  const launcher = join(workspace, '启动 TheOne Codex.vbs')
+  const script = `
+$ErrorActionPreference = 'Stop'
+$path = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Codex TheOne.lnk'
+if (Test-Path -LiteralPath $path) {
+  $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+  $hostPath = Join-Path $env:WINDIR 'System32\\wscript.exe'
+  if ($shortcut.TargetPath -eq $hostPath -and $shortcut.Arguments -eq ('"' + ${psString(launcher)} + '"')) {
+    Remove-Item -LiteralPath $path
+  }
+}
+`
+  await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { encoding: 'utf8', windowsHide: true })
+}
