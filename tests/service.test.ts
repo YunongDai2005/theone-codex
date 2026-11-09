@@ -1,12 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { TheOneService } from '../src/service.ts'
 
 async function fixture(fn: (s: TheOneService, dir: string) => Promise<void>) {
-  const dir = mkdtempSync(join(tmpdir(), 'gpt-theone-'))
+  // Long-form path: CI runners hand out 8.3 temp paths (RUNNER~1), and workspaces are stored canonical.
+  const dir = realpathSync.native(mkdtempSync(join(tmpdir(), 'gpt-theone-')))
   const s = new TheOneService({ dataDir: dir })
   try { s.configure('main', { workspace: dir }); await fn(s, dir) }
   finally { await s.close(); rmSync(dir, { recursive: true, force: true }) }
