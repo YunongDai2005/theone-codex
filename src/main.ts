@@ -29,6 +29,7 @@ if (mode === 'hook') {
   const service = new TheOneService({ dataDir, backend: new CodexBackend(), router, catalog: { source: new CodexHistorySource(), model: new CodexCatalogModel() } })
   const tasks = new TaskManager(service, dataDir)
   const server = createMcpServer(service, tasks)
+  void service.checkUpdates()
   let closing = false
   const close = async () => { if (closing) return; closing = true; await tasks.close(); await service.close(); await server.close() }
   process.once('SIGINT', () => { void close() }); process.once('SIGTERM', () => { void close() }); process.stdin.once('end', () => { void close() })

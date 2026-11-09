@@ -2,6 +2,18 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { DesktopController } from './desktop-controller.mjs'
 
+test('overlapping desktop reads never replace a newer cursor and scope changes reset the feed', async () => {
+  const replies = []
+  const controller = new DesktopController({ load: () => null, save: () => {}, current: () => ({}), call: () => new Promise(resolve => replies.push(resolve)) })
+  const first = controller.refresh(), second = controller.refresh()
+  replies[1]({ gateway: null, topics: [{ id: 'new' }], cursor: { epoch: 'e', seq: 8, gatewayId: null } }); await second
+  replies[0]({ gateway: null, topics: [{ id: 'old' }], cursor: { epoch: 'e', seq: 7, gatewayId: null } }); await first
+  assert.equal(controller.state.topics[0].id, 'new')
+  const third = controller.refresh()
+  replies[2]({ gateway: null, topics: [], reset: true, cursor: { epoch: 'fresh', seq: 0, gatewayId: null } }); await third
+  assert.equal(controller.state.cursor.epoch, 'fresh')
+})
+
 function fixture() {
   let saved = null, snapshot = { gateway: null, topics: [], activity: [] }, current = { locationKey: 'initial', workspace: 'D:/project' }
   const requests = [], openings = [], bindings = new Map()
@@ -20,6 +32,35 @@ function fixture() {
   }
   return { host, requests, openings, bindings, saved: () => saved, setSnapshot: s => { snapshot = s }, navigate: key => { current = { locationKey: key, workspace: 'D:/elsewhere' } } }
 }
+
+test('send prerouting binds the first main draft, ignores other chats and silently tolerates transport failure', async () => {
+  const f = fixture(), c = new DesktopController(f.host)
+  assert.equal(typeof c.preroute, 'function')
+  await c.open(); f.bindings.set('draft-1', 'native-1')
+  await c.preroute({ threadId: 'native-1', text: '继续写作' })
+  assert.equal(f.requests.at(-1).name, 'theone_preroute')
+  assert.deepEqual(f.requests.at(-1).args, { gatewayId: 'native-1', text: '继续写作' })
+  const count = f.requests.length
+  await c.preroute({ threadId: 'other', text: '别的聊天' }); assert.equal(f.requests.length, count)
+  f.host.call = async () => { throw Error('offline') }
+  await c.preroute({ threadId: 'native-1', text: '继续写作' }); assert.equal(c.state.error, null)
+})
+
+test('routing settings remain separate from history and update failures stay silent', async () => {
+  const f = fixture(), c = new DesktopController(f.host), calls = []
+  assert.equal(typeof c.routerModels, 'function')
+  c.emit({ historyModelSelection: { model: 'history', effort: 'medium', fast: false } })
+  f.host.call = async (name, args) => {
+    calls.push({ name, args })
+    if (name === 'theone_check_updates') throw Error('offline')
+    if (name === 'theone_router_models') return { models: [{ model: 'luna', reasoningEfforts: ['low','medium'], defaultEffort: 'low', fastTier: 'priority' }], selection: { model: 'luna', effort: 'low', fast: false } }
+    return args.modelSettings
+  }
+  await c.routerModels(); c.routerSelectModel({ fast: true }); await c.routerSave()
+  assert.deepEqual(calls.at(-1), { name: 'theone_router_configure', args: { modelSettings: { model: 'luna', effort: 'low', fast: true } } })
+  assert.equal(c.state.historyModelSelection.model, 'history')
+  await c.checkUpdates(true); assert.equal(c.state.error, null); assert.equal(c.state.update, null)
+})
 
 test('repeated clicks reuse the same unsent native draft instead of clearing it', async () => {
   const f = fixture(), c = new DesktopController(f.host)

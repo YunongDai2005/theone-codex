@@ -5,10 +5,13 @@ import { EventEmitter } from 'node:events'
 import { PassThrough, Writable } from 'node:stream'
 import { routerProtocol } from './router-app-server.mjs'
 import { catalogProtocol } from './catalog-app-server.mjs'
+import { workerProtocol } from './app-server.mjs'
 
 export function installInProcessRouter(t) {
   let pid = 0
   const mock = t.mock.method(childProcess, 'spawn', (_command, _args, options) => {
+    const fixture = _args[0]?.replaceAll('\\', '/')
+    if (!/\/fixtures\/(?:router-app-server|catalog-app-server|app-server)\.mjs$/.test(fixture ?? '')) throw Error('Unexpected child process in offline tests: ' + fixture)
     const child = new EventEmitter()
     child.stdout = new PassThrough(); child.stderr = new PassThrough()
     let stopped = false
@@ -17,8 +20,9 @@ export function installInProcessRouter(t) {
       stopped = true; child.stdout.end(); child.stderr.end(); queueMicrotask(() => child.emit('exit', 0)); return true
     }
     const send = value => { if (!stopped) child.stdout.write(JSON.stringify(value) + '\n') }
-    const receive = _args[0]?.endsWith('catalog-app-server.mjs') ? catalogProtocol(send, options.env, process.cwd())
-      : routerProtocol(send, options.env, () => child.kill(), ++pid)
+    const receive = fixture.endsWith('/catalog-app-server.mjs') ? catalogProtocol(send, options.env, process.cwd())
+      : fixture.endsWith('/router-app-server.mjs') ? routerProtocol(send, options.env, () => child.kill(), ++pid)
+      : workerProtocol(send, () => child.kill())
     let text = ''
     child.stdin = new Writable({ write(chunk, _encoding, done) {
       text += chunk.toString()

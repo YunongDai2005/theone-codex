@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { readArchiveFile, rewriteArchive, updateIntegrityResource } from './archive.mjs'
 import { patchRenderer, RENDERER_PATH, ADAPTER_VERSION } from './renderer-patch.mjs'
+import { patchSendRenderer, SEND_RENDERER_PATH } from './send-patch.mjs'
 
 const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const installed = 'C:/Program Files/WindowsApps/OpenAI.Codex_26.1103.4239.0_x64__2p2nqsd0c76g0/app'
@@ -15,6 +16,8 @@ const sha = data => createHash('sha256').update(data).digest('hex')
 // Fail before copying anything when the installed renderer does not match this adapter.
 const originalRenderer = readArchiveFile(sourceArchive, RENDERER_PATH)
 const patchedRenderer = Buffer.from(patchRenderer(originalRenderer.toString()))
+const originalSendRenderer = readArchiveFile(sourceArchive, SEND_RENDERER_PATH)
+const patchedSendRenderer = Buffer.from(patchSendRenderer(originalSendRenderer.toString()))
 const executable = await readFile(sourceExe)
 const originalExecutableHash = sha(executable)
 try { await access(destination); throw new Error('Destination already exists; refusing to overwrite a client') }
@@ -27,12 +30,13 @@ await cp(installed, destination, {
   filter: path => relative(installed, path).replaceAll('\\', '/') !== 'resources/app.asar',
 })
 console.log('Building the adapted archive and preserving ASAR integrity checks…')
-const archive = rewriteArchive(sourceArchive, join(destination, 'resources', 'app.asar'), new Map([[RENDERER_PATH, patchedRenderer]]))
+const archive = rewriteArchive(sourceArchive, join(destination, 'resources', 'app.asar'), new Map([[RENDERER_PATH, patchedRenderer], [SEND_RENDERER_PATH, patchedSendRenderer]]))
 const patchedExe = updateIntegrityResource(executable, archive.originalHeaderHash, archive.headerHash)
 await writeFile(join(destination, 'ChatGPT.exe'), patchedExe)
 if (sha(await readFile(sourceExe)) !== originalExecutableHash) throw new Error('Original executable changed during build')
 if (!readArchiveFile(sourceArchive, RENDERER_PATH).equals(originalRenderer)) throw new Error('Original renderer changed during build')
 if (!readArchiveFile(join(destination, 'resources', 'app.asar'), RENDERER_PATH).equals(patchedRenderer)) throw new Error('Adapted renderer readback failed')
+if (!readArchiveFile(join(destination, 'resources', 'app.asar'), SEND_RENDERER_PATH).equals(patchedSendRenderer)) throw new Error('Adapted send renderer readback failed')
 const report = {
   builtAt: new Date().toISOString(), adapterVersion: ADAPTER_VERSION,
   sourceApp: installed, clientApp: destination, originalClientPreserved: true,

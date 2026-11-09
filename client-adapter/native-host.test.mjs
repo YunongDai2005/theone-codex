@@ -59,3 +59,16 @@ test('home-route native drafts have an identity even though the host sidebar sel
   f.values.set('location', { pathname: '/settings' })
   assert.equal(f.host.current().clientThreadId, null)
 })
+
+test('native send subscription forwards only local user requests and never propagates listener failures', async () => {
+  const f = fixture(), events = new EventTarget(), seen = []
+  globalThis.window = events
+  assert.equal(typeof f.host.watchSend, 'function')
+  const stop = f.host.watchSend(value => { seen.push(value); return Promise.reject(Error('offline')) })
+  const send = detail => { const e = new Event('theone-user-send'); e.detail = detail; events.dispatchEvent(e) }
+  send({ hostId: 'local', threadId: 'main', text: 'hi' })
+  send({ hostId: 'remote', threadId: 'main', text: 'no' })
+  await new Promise(resolve => setImmediate(resolve))
+  assert.equal(seen.length, 1); stop(); send({ hostId: 'local', threadId: 'main', text: 'again' }); assert.equal(seen.length, 1)
+  delete globalThis.window
+})

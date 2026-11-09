@@ -17,6 +17,7 @@ test('official MCP client can discover, validate and use the topic workflow', as
     await server.connect(a); await client.connect(b)
     const { tools } = await client.listTools()
     assert.ok(tools.some(t => t.name === 'theone_dispatch'))
+    for (const name of ['theone_preroute','theone_cancel_merge','theone_answer_suggestion','theone_check_updates']) assert.ok(tools.some(t => t.name === name))
     assert.equal(tools.find(t => t.name === 'theone_dispatch')!.annotations!.readOnlyHint, false)
     const bad = await client.callTool({ name: 'theone_configure', arguments: { gatewayId: 'main', workspace: dir, sandbox: 'danger-full-access' } })
     assert.equal(bad.isError, true)
@@ -27,6 +28,30 @@ test('official MCP client can discover, validate and use the topic workflow', as
     assert.equal((listed.structuredContent as { result: unknown[] }).result.length, 1)
     const resources = await client.listResources()
     assert.ok(resources.resources.some(r => r.uri === 'theone://status'))
+  } finally { await client.close(); await server.close(); await service.close(); rmSync(dir, { recursive: true, force: true }) }
+})
+
+test('native MCP exposes cursor feeds, queued merges and structured correction conflicts', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'theone-parity-mcp-')), service = new TheOneService({ dataDir: dir })
+  const server = createMcpServer(service), client = new Client({ name: 'parity-client', version: '1' }), [a,b] = InMemoryTransport.createLinkedPair()
+  try {
+    await server.connect(a); await client.connect(b)
+    service.desktopBind('p', 'main', dir); service.configure('main', { routerMode: 'rules' })
+    const sourceId = service.createTopic('写作'), targetId = service.createTopic('笔记')
+    const invoke = async (name: string, args: object) => client.callTool({ name, arguments: args as any })
+    await invoke('theone_preroute', { gatewayId: 'main', inputId: 'input', text: '继续' })
+    await invoke('theone_route', { gatewayId: 'main', inputId: 'input', text: '继续', topicId: sourceId })
+    service.runtime.put('run', 'busy', { id: 'busy', topicId: sourceId, status: 'running', pid: process.pid })
+    const refused = await invoke('theone_correct_route', { gatewayId: 'main', inputId: 'input', topicId: targetId })
+    assert.equal(refused.isError, true); assert.equal((refused.structuredContent as any).statusCode, 409)
+    const merged = await invoke('theone_merge_topics', { sourceId, targetId, whenIdle: true, requestId: 'merge' })
+    assert.equal((merged.structuredContent as any).result.state, 'queued')
+    const snapshot = (await invoke('theone_desktop_state', { profileId: 'p' })).structuredContent as any
+    assert.equal(snapshot.result.pendingMerges.length, 1)
+    const again = await invoke('theone_desktop_state', { profileId: 'p', cursor: snapshot.result.cursor })
+    assert.deepEqual((again.structuredContent as any).result.events, [])
+    const cancelled = await invoke('theone_cancel_merge', { operationId: (merged.structuredContent as any).result.operationId })
+    assert.equal((cancelled.structuredContent as any).result.state, 'cancelled')
   } finally { await client.close(); await server.close(); await service.close(); rmSync(dir, { recursive: true, force: true }) }
 })
 

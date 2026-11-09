@@ -17,11 +17,20 @@ export function createNativeHost({ scope, modules, preview, startDraft }) {
     save: record => localStorage.setItem(storageKey, JSON.stringify(record)),
     resolveThread: (id, get = (...args) => scope.get(...args)) => get(binding.Tl, id),
     watch: (callback, pendingId) => scope.watch(({ get }) => { const value = current(get); if (pendingId()) get(binding.Tl, pendingId()); callback(value) }),
+    watchSend: callback => {
+      const listener = event => {
+        const value = event.detail
+        if (value?.hostId !== hostId || typeof value.threadId !== 'string' || typeof value.text !== 'string') return
+        try { Promise.resolve(callback(value)).catch(() => {}) } catch {}
+      }
+      window.addEventListener('theone-user-send', listener)
+      return () => window.removeEventListener('theone-user-send', listener)
+    },
     call: async (tool, args) => {
       const currentProfile = JSON.stringify([scope.get(account.chatGptAuthenticatedUserId$), scope.get(account.chatGptAuthenticatedAccountId$), hostId])
       if (currentProfile !== profileId) throw Error('账户已切换，请重新打开 TheOne。')
       const result = await modules('ILnd').W1(scope, hostId, 'theone', tool, args, { retryOnTransportClosed: false })
-      if (result.isError) throw Error(result.content?.find(item => item.type === 'text')?.text ?? 'TheOne 请求未完成')
+      if (result.isError) throw Object.assign(Error(result.content?.find(item => item.type === 'text')?.text ?? 'TheOne 请求未完成'), { statusCode: result.structuredContent?.statusCode })
       return result.structuredContent?.result ?? JSON.parse(result.content.find(item => item.type === 'text').text)
     },
     readThread: id => modules('Dgwo').V(scope, hostId).readThread(id, { includeTurns: false }),

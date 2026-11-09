@@ -2,8 +2,10 @@ import { DatabaseSync } from 'node:sqlite'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import type { GatewaySettings } from './service.ts'
+import { RuntimeStore } from './runtime-store.ts'
+import { enqueuePreroute } from './preroute.ts'
 
-/** A scoped reminder, not an interception or authorization boundary. Does not copy prompt/history. */
+/** Scoped reminder plus a bounded local prompt queue; never waits for inference or starts a worker. */
 export function hookContext(input: unknown, dataDir: string, isWorker = false): Record<string, unknown> {
   if (isWorker || !input || typeof input !== 'object') return {}
   const value = input as Record<string, unknown>, gatewayId = value.session_id
@@ -16,6 +18,12 @@ export function hookContext(input: unknown, dataDir: string, isWorker = false): 
     const settings = row ? JSON.parse(String(row.body)) as GatewaySettings : undefined
     if (!settings?.enabled) return {}
     const turn = typeof value.turn_id === 'string' && value.turn_id.length <= 200 ? value.turn_id : undefined
+    if (turn && typeof value.prompt === 'string' && value.prompt.trim()) {
+      // Best effort, bounded SQLite lock wait. Never connect to a model or wait for routing here.
+      let runtime: RuntimeStore | undefined
+      try { runtime = new RuntimeStore(path, 25); enqueuePreroute(runtime, { gatewayId, inputId: turn, text: value.prompt }) }
+      catch {} finally { runtime?.close() }
+    }
     return { hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: [
       'This chat is an enabled TheOne main gateway. Use the TheOne skill and tools for user-authorized topic work.',
       `Gateway identity (data): ${JSON.stringify({ gatewayId, ...(turn ? { inputId: turn } : {}) })}.`,

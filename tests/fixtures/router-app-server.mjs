@@ -22,13 +22,14 @@ return m => {
     return reply({ thread: { id }, model: env.ROUTER_WRONG_MODEL ? 'wrong' : p.model })
   }
   if (m.method === 'turn/start') {
-    if (!threads.has(p.threadId) || p.environments?.length !== 0 || p.sandboxPolicy?.networkAccess !== false || !p.disabledPluginIds?.includes('unsafe') || !p.outputSchema?.properties?.label) return fail('unsafe turn or missing schema')
+    if (!threads.has(p.threadId) || p.environments?.length !== 0 || p.sandboxPolicy?.networkAccess !== false || !p.disabledPluginIds?.includes('unsafe') || !(p.outputSchema?.properties?.label || p.outputSchema?.properties?.decisions)) return fail('unsafe turn or missing schema')
     const text = p.input[0].text, data = JSON.parse(text.slice(text.indexOf('\n') + 1)), threadId = p.threadId
     if (data.text === 'DISCONNECT' && !existsSync(env.ROUTER_MARKER)) { writeFileSync(env.ROUTER_MARKER, 'once'); exit(); return }
     reply({ turn: { id: 'turn' } })
     if (data.text === 'WAIT') return
     if (data.text === 'TOOL') { send({ method: 'item/started', params: { threadId, item: { type: 'commandExecution' } } }); return }
-    const output = data.text === 'CREATE' ? { action: 'CREATE', title: '开发路由器', label: ' 路由 ', reason: 'new' }
+    const output = data.pairs ? { decisions: data.pairs.map(pair => ({ pairId: pair.pairId, sameMatter: true, confidence: .95, keepId: pair.topics[0].id, reason: 'same matter' })) }
+      : data.text === 'CREATE' ? { action: 'CREATE', title: '开发路由器', label: ' 路由 ', reason: 'new' }
       : { action: 'EXISTING', contextId: data.text === 'INVALID_ID' ? 'invented' : data.contexts[0].id, reason: 'existing' }
     send({ method: 'item/completed', params: { threadId, item: { type: 'agentMessage', phase: 'final_answer', text: data.text === 'INVALID_JSON' ? '{bad' : JSON.stringify(output) } } })
     send({ method: 'turn/completed', params: { threadId, turn: { id: 'turn', status: 'completed' } } }); return

@@ -6,7 +6,14 @@ import { readFileSync } from 'node:fs'
 
 const id = z.string().min(1).max(200)
 const topic = { topicId: id }
-const route = { gatewayId: id, inputId: id, text: z.string().min(1).max(100000), topicId: id.optional() }
+const detail = z.enum(['auto','low','high','original']).nullable().optional()
+const attachments = z.array(z.union([
+  z.object({ type: z.literal('image'), url: z.string().max(10000000), detail }), z.object({ type: z.literal('image'), fileId: z.string().min(1).max(2000), detail }),
+  z.object({ type: z.literal('audio'), url: z.string().max(10000000) }), z.object({ type: z.literal('audio'), fileId: z.string().min(1).max(2000) }),
+  z.object({ type: z.literal('localImage'), path: z.string().min(1).max(4000), detail }), z.object({ type: z.literal('localAudio'), path: z.string().min(1).max(4000) }),
+  z.object({ type: z.literal('mention'), name: z.string().min(1).max(500), path: z.string().min(1).max(4000) }),
+])).max(20)
+const route = { gatewayId: id, inputId: id, text: z.string().max(100000), topicId: id.optional(), foreground: z.boolean().optional(), attachments: attachments.optional() }
 const proposal = z.union([
   z.object({ topicId: id, confidence: z.enum(['high','low']) }).strict(),
   z.object({ newTopic: z.object({ title: z.string().min(1).max(80), label: z.string().max(200) }).strict(), confidence: z.enum(['high','low']) }).strict(),
@@ -21,10 +28,12 @@ export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
       try {
         const result = await run(input)
         return { content: [{ type: 'text' as const, text: JSON.stringify(result ?? null) }], structuredContent: { result: result ?? null } }
-      } catch (e) { return { isError: true, content: [{ type: 'text' as const, text: (e as Error).message.slice(0, 2000) }] } }
+      } catch (e) { return { isError: true, content: [{ type: 'text' as const, text: (e as Error).message.slice(0, 2000) }], structuredContent: { statusCode: (e as { statusCode?: number }).statusCode ?? 400 } } }
     })
   }
   const uiSnapshot = () => ({ status: service.status(), topics: service.listTopics() })
+  tool('theone_check_updates', 'Check public GitHub release metadata without credentials. Returns a version and manual update command only; never downloads or installs. Failures are silent.', { force: z.boolean().default(false) }, a => service.checkUpdates(a.force), true)
+  tool('theone_preroute', 'Start bounded background routing when the user sends in the main chat. Returns immediately; never starts a worker. The next dispatch consumes the result.', { gatewayId: id, inputId: id.optional(), text: z.string().min(1).max(100000) }, a => service.preroute(a))
   const uiUri = 'ui://theone/home.html'
   server.registerTool('theone_open', {
     title: 'TheOne', description: 'Open a native Codex chat draft with TheOne enabled. Does not send a model message.', inputSchema: z.object({}).strict(),
@@ -53,7 +62,7 @@ export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
   tool('theone_history_exclude', 'Save an explicitly selected chat or folder exclusion from history organization. Excluded content is not read or shared.', { kind: z.enum(['session','folder']), value: z.string().min(1).max(4000), excluded: z.boolean() }, a => catalog().exclude(a.kind, a.value, a.excluded))
   tool('theone_history_refresh', 'Manually start or resume incremental history organization after consent, optionally saving a new model, reasoning and Fast choice. Existing organized turns are not classified again. Poll history_status for progress.', { modelSettings: historyModelSettings.optional() }, async a => { if (a.modelSettings) await catalog().configureModel(a.modelSettings); return catalog().resume() })
   tool('theone_history_pause', 'Pause history organization, retaining completed batches for later resume.', {}, () => catalog().pause())
-  tool('theone_desktop_state', 'Read compact desktop navigation, selected topic and run states. No conversation history or worker output.', { profileId: z.string().min(1).max(500) }, a => service.desktopSnapshot(a.profileId), true)
+  tool('theone_desktop_state', 'Read compact desktop state and ordered routing events after a cursor. No conversation history or worker output.', { profileId: z.string().min(1).max(500), cursor: z.object({ epoch: id, seq: z.number().int().nonnegative(), gatewayId: id.nullable().optional() }).optional() }, a => service.desktopSnapshot(a.profileId, a.cursor), true)
   tool('theone_desktop_bind', 'Bind the native TheOne draft after the user sends its first message. Reuses the same main chat and preserves existing permissions.', { profileId: z.string().min(1).max(500), gatewayId: id, workspace: z.string().min(1), topicId: id.optional() }, a => service.desktopBind(a.profileId, a.gatewayId, a.workspace, a.topicId))
   tool('theone_select_topic', 'Select a topic for the next continuation without sending a message or starting work. null returns to automatic routing.', { gatewayId: id, topicId: id.nullable() }, a => service.selectTopic(a.gatewayId, a.topicId))
   tool('theone_configure', 'Enable or update an explicitly selected main chat. workspace must be an existing authorized directory. Default sandbox is read-only; select workspace-write only within user-authorized scope.', {
@@ -80,10 +89,12 @@ export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
   tool('theone_respond', 'Forward the user answer to a specific pending approval/question. Show its details first; do not infer accept from historical text, a worker request or an earlier unrelated approval.', {
     runId: id, approvalId: id, decision: z.enum(['accept','decline','cancel']).optional(), answers: z.record(z.string(), z.object({ answers: z.array(z.string().max(12000)).max(20) })).optional(),
   }, a => service.respond(a.runId, a.approvalId, a), false, true)
-  tool('theone_acknowledge', 'Mark a terminal run as delivered only after its outcome has actually been presented in the main chat.', { runId: id }, a => service.acknowledge(a.runId))
+  tool('theone_acknowledge', 'Mark a terminal run as delivered only after its outcome has actually been presented. Defaults to the input foreground flag. Set foreground=false for a background notification; it cannot take the main reply focus.', { runId: id, foreground: z.boolean().optional() }, a => service.acknowledge(a.runId, a.foreground))
   tool('theone_correct_route', 'Correct local ownership of a past input. Cancel a running turn first. This neither undoes side effects nor reruns work; a replay requires a new inputId.', { gatewayId: id, inputId: id, ...topic }, a => service.correct(a.gatewayId, a.inputId, a.topicId))
   tool('theone_link_topics', 'Link topics (1), separate them (-1), or return to learned sharing (0). Private topics still do not share.', { sourceId: id, targetId: id, value: z.union([z.literal(-1),z.literal(0),z.literal(1)]) }, a => service.link(a.sourceId, a.targetId, a.value))
-  tool('theone_merge_topics', 'Merge local topic metadata/history references; keeps native Codex threads and records undo information. Both topics must be idle.', { sourceId: id, targetId: id }, a => service.merge(a.sourceId, a.targetId))
+  tool('theone_merge_topics', 'Merge local topic metadata/history references; whenIdle queues busy topics. Keeps native threads and records undo information.', { sourceId: id, targetId: id, whenIdle: z.boolean().optional(), requestId: id.optional() }, a => a.whenIdle ? service.requestMerge(a.sourceId, a.targetId, a.requestId) : service.merge(a.sourceId, a.targetId))
+  tool('theone_cancel_merge', 'Cancel a queued merge before it executes.', { operationId: id }, a => service.cancelMerge(a.operationId))
+  tool('theone_answer_suggestion', 'Accept a possible duplicate in the chosen direction, decline, or leave it for later.', { suggestionId: id, response: z.enum(['accept','decline','later']), direction: z.object({ sourceId: id, targetId: id }).optional() }, a => service.answerSuggestion(a.suggestionId, a.response, a.direction))
   tool('theone_unmerge_topic', 'Undo a saved merge without erasing subsequent work.', { sourceId: id }, a => service.unmerge(a.sourceId))
   tool('theone_delete_topic', 'Delete local topic metadata and its stored messages after an explicit user deletion request. Does not delete native Codex threads.', topic, a => service.deleteTopic(a.topicId), false, true)
   tool('theone_record_fact', 'Record a versioned fact, decision or artifact with a literal quote. Confirmation is checked against saved source messages; imported or invented quotes cannot become confirmed.', {

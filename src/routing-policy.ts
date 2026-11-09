@@ -119,10 +119,22 @@ export const MERGE_TITLE_SIMILARITY = 0.6
 export const MERGE_NAME_MIN_LENGTH = 2
 export const MERGE_ENGLISH_NAME_MIN_LETTERS = 3
 
-export interface MergeTopic { title: string; names?: readonly string[]; entities?: readonly string[]; cwd?: string }
+export interface MergeTopic { title: string; summary?: string; names?: readonly string[]; entities?: readonly string[]; cwd?: string }
 
 /** Only whole names count; a shared generic word inside a longer name is not another entity. */
 export function mergeSimilarity(a: MergeTopic, b: MergeTopic): { sharedNames: number; titleSimilarity: number } | undefined {
+  const evidence = mergeEvidence(a, b)
+  return evidence && (evidence.sharedNames >= MERGE_SHARED_NAMES || evidence.titleSimilarity >= MERGE_TITLE_SIMILARITY) ? evidence : undefined
+}
+
+/** DSH's broader candidate gate is safe only with a separate semantic verdict. */
+export function mergeCandidateSimilarity(a: MergeTopic, b: MergeTopic) {
+  const evidence = mergeEvidence(a, b)
+  if (!evidence) return
+  const left = textFeatures(a.summary ?? ''), right = textFeatures(b.summary ?? ''), shared = [...left].filter(term => right.has(term)).length
+  return evidence.sharedNames >= 1 || evidence.titleSimilarity >= .35 || shared >= 2 && similarity(left, right) >= .25 ? evidence : undefined
+}
+function mergeEvidence(a: MergeTopic, b: MergeTopic) {
   const folder = (cwd?: string) => {
     if (!cwd) return ''
     const windows = /^[a-z]:[\\/]|^[\\/]{2}/i.test(cwd)
@@ -137,5 +149,5 @@ export function mergeSimilarity(a: MergeTopic, b: MergeTopic): { sharedNames: nu
   const left = names(a), right = names(b)
   const sharedNames = [...left].filter(name => right.has(name)).length
   const titleSimilarity = similarity(textFeatures(a.title), textFeatures(b.title))
-  return sharedNames >= MERGE_SHARED_NAMES || titleSimilarity >= MERGE_TITLE_SIMILARITY ? { sharedNames, titleSimilarity } : undefined
+  return { sharedNames, titleSimilarity }
 }

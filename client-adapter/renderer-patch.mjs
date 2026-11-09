@@ -5,7 +5,7 @@ import { PLUGIN_MENTION } from './native-host.mjs'
 
 export const RENDERER_PATH = 'webview/assets/async/499225.6d2e47bea2.js'
 export const RENDERER_SHA256 = '80f7a6b651f9f56ac97463123d72963c2a78570f6f0162c75d0d6d9d0a03f074'
-export const ADAPTER_VERSION = '0.4.2'
+export const ADAPTER_VERSION = '0.4.3'
 export const THEONE_PROMPT = PLUGIN_MENTION
 
 export function patchRenderer(source) {

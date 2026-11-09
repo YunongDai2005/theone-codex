@@ -2,6 +2,7 @@ import type { AppServerOptions } from './app-server.ts'
 import { CodexJsonClient } from './codex-json-client.ts'
 import { routingPrompt, routingPayload, validateRoutingDecision, RouterFailure, type RoutingInput, type RoutingRouter, type RoutingResult, type RoutingOptions } from './llm-router.ts'
 import { recommendedRouterModel, validateRouterModel, type RouterModelSettings } from './router-model-settings.ts'
+import { MERGE_VET_PROMPT, MERGE_VET_SCHEMA, type MergePair } from './merge-vetting.ts'
 
 const nullableString = { type: ['string', 'null'] }
 const ids = { type: 'array', items: { type: 'string' } }
@@ -25,6 +26,10 @@ export class CodexRouter implements RoutingRouter {
     this.client = new CodexJsonClient(options)
   }
   models() { return this.client.models() }
+  async vetMerges(pairs: MergePair[], signal: AbortSignal, settings?: RouterModelSettings) {
+    return (await this.client.execute({ pairs }, { prompt: MERGE_VET_PROMPT, schema: MERGE_VET_SCHEMA, signal, serviceName: 'gpt-theone-merge-vetting',
+      select: models => { const selection = settings ?? this.options.settings ?? recommendedRouterModel(models); if (!selection) throw new RouterFailure('ROUTER_MODEL_SELECTION_REQUIRED'); return validateRouterModel(selection, models) } })).value
+  }
   async decide(input: RoutingInput, parentSignal?: AbortSignal, _sessionId?: string, options?: RoutingOptions): Promise<RoutingResult> {
     const started = Date.now(), signal = AbortSignal.any([...(parentSignal ? [parentSignal] : []), AbortSignal.timeout(this.timeoutMs)])
     const selected = options?.modelSettings ?? this.options.settings

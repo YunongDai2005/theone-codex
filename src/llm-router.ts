@@ -75,7 +75,8 @@ export function newRoutingTrace(): RoutingTrace {
   return { candidateIds: [], recheck: { attempted: false }, review: { attempted: false, pages: [] }, autoSettled: false }
 }
 export interface RouterReceipt {
-  source?: 'explicit' | 'proposal' | 'codex' | 'http' | 'rules' | 'fallback'
+  source?: 'explicit' | 'proposal' | 'codex' | 'http' | 'rules' | 'fallback' | 'preroute'
+  waitMs?: number
   binding?: BindingResolution
   continuation?: ContinuationResolution
   temporary?: TemporaryReturn
@@ -281,6 +282,7 @@ export function validateRoutingDecision(value: unknown, input: RoutingInput): De
 }
 
 export interface RoutingRouter {
+  vetMerges?(pairs: import('./merge-vetting.ts').MergePair[], signal: AbortSignal, settings?: import('./router-model-settings.ts').RouterModelSettings): Promise<unknown>
   readonly source?: 'codex' | 'http'
   models?(): Promise<RouterModelChoice[]>
   close?(): Promise<void>

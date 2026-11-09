@@ -10,6 +10,15 @@ import { recommendedRouterModel } from '../src/router-model-settings.ts'
 import { installInProcessRouter } from './fixtures/in-process-router.mjs'
 
 const input = { text: '继续', contexts: [{ id: 'book', title: '书稿', summary: '', entities: [], keywords: [], lastState: '' }] }
+
+test('merge vetting uses a separate tool-free structured native turn and the saved routing selection', () => fixture(async (router, log) => {
+  const pairs = [{ pairId: 'pair', topics: [{ id: 'a', title: '旅行', summary: '', entities: [] }, { id: 'b', title: '住宿', summary: '', entities: [] }] }]
+  const result = await router.vetMerges(pairs, new AbortController().signal, { model: 'gpt-6-luna', effort: 'medium', fast: true }) as any
+  assert.equal(result.decisions[0].keepId, 'a')
+  const turn = log().find(m => m.method === 'turn/start').params
+  assert.equal(turn.effort, 'medium'); assert.equal(turn.serviceTier, 'priority'); assert.ok(turn.outputSchema.properties.decisions)
+  assert.equal(log().find(m => m.method === 'thread/start').params.serviceName, 'gpt-theone-merge-vetting')
+}))
 async function fixture(fn: (router: CodexRouter, log: () => any[]) => Promise<void>, options = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'codex-router-'))
   const router = new CodexRouter({ command: process.execPath, args: [resolve('tests/fixtures/router-app-server.mjs')],

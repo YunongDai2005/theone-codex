@@ -13,6 +13,33 @@ async function fixture(fn: (service: TheOneService, dir: string) => Promise<void
   try { service.configure('main', { workspace: dir }); await fn(service, dir) }
   finally { await service.close(); rmSync(dir, { recursive: true, force: true }) }
 }
+
+test('native turn steering carries the expected turn id and returns the same worker answer', async () => fixture(async s => {
+  const topic = s.createTopic('写作'), first = await s.dispatch({ gatewayId: 'main', inputId: 'first', text: 'hang', topicId: topic }) as Run
+  for (let i = 0; i < 50 && !s.run(first.id).turnId; i++) await new Promise(resolve => setTimeout(resolve, 5))
+  const extra = await s.dispatch({ gatewayId: 'main', inputId: 'extra', text: '增加结论', topicId: topic }) as Run
+  assert.equal(extra.steeringOf, first.id)
+  const finished = await s.wait(extra.id, 1000)
+  assert.equal(finished.status, 'completed')
+  assert.deepEqual(JSON.parse(finished.output[0].text).steered, [{ type: 'text', text: '增加结论', text_elements: [] }])
+}))
+
+test('image-only input reaches the actual native turn schema without an invented text message', () => fixture(async s => {
+  const attachments = [{ type: 'image' as const, url: 'data:image/png;base64,fixture' }]
+  const run = await s.dispatch({ gatewayId: 'main', inputId: 'image', text: '', attachments }) as Run
+  const finished = await s.wait(run.id, 1000), wire = JSON.parse(finished.output[0].text)
+  assert.equal(finished.status, 'completed'); assert.deepEqual(wire.input.slice(1), attachments)
+}))
+
+test('native media/file references preserve attachment-only input and optional image detail', () => fixture(async s => {
+  const attachments = [
+    { type: 'image', fileId: 'file-image', detail: 'original' }, { type: 'audio', url: 'https://example.com/audio.wav' },
+    { type: 'localAudio', path: 'C:/fixture/audio.wav' }, { type: 'mention', name: 'notes.txt', path: 'C:/fixture/notes.txt' },
+  ] as any
+  const run = await s.dispatch({ gatewayId: 'main', inputId: 'media', text: '', attachments }) as Run
+  const finished = await s.wait(run.id, 1000)
+  assert.equal(finished.status, 'completed'); assert.deepEqual(JSON.parse(finished.output[0].text).input.slice(1), attachments)
+}))
 test('A/B keep separate threads, duplicate delivery executes once, returning A resumes its history', async () => fixture(async s => {
   const a = await s.dispatch({ gatewayId: 'main', inputId: 'a', text: '新话题：论文' }) as Run
   const b = await s.dispatch({ gatewayId: 'main', inputId: 'b', text: '新话题：露营' }) as Run

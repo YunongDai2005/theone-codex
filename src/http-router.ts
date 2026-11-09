@@ -1,4 +1,5 @@
 import { routingPrompt, routingPayload, validateRoutingDecision, answerJson, RouterFailure, type RoutingInput, type RoutingRouter, type RoutingResult } from './llm-router.ts'
+import { MERGE_VET_PROMPT, type MergePair } from './merge-vetting.ts'
 
 /** Optional explicitly configured OpenAI-compatible classifier. No tools or host account tokens. */
 export class HttpRouter implements RoutingRouter {
@@ -9,16 +10,24 @@ export class HttpRouter implements RoutingRouter {
     if (!config.model.trim()) throw new Error('ROUTER_MODEL_REQUIRED')
   }
   async decide(input: RoutingInput, signal?: AbortSignal): Promise<RoutingResult> {
+    const payload = routingPayload(input), { value, ...result } = await this.query(routingPrompt(payload), payload, signal)
+    try { return { ...result, decision: validateRoutingDecision(value, input) } }
+    catch (error) {
+      const failure = error as RouterFailure
+      throw new RouterFailure(failure.code ?? 'ROUTER_INVALID_DECISION', { elapsedMs: result.elapsedMs, attempts: [{ attempt: 1, sent: true, model: result.model, elapsedMs: result.elapsedMs, errorCode: failure.code }] })
+    }
+  }
+  async vetMerges(pairs: MergePair[], signal: AbortSignal) { return (await this.query(MERGE_VET_PROMPT, { pairs }, signal)).value }
+  private async query(prompt: string, payload: unknown, signal?: AbortSignal) {
     const started = Date.now()
     let sent = false
     try {
-      const payload = routingPayload(input)
       const bounded = AbortSignal.timeout(Math.min(30000, this.config.timeoutMs ?? 8000))
       sent = true
       const response = await this.fetcher(this.config.endpoint, {
         method: 'POST', redirect: 'error', signal: signal ? AbortSignal.any([signal, bounded]) : bounded,
         headers: { 'Content-Type': 'application/json', ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {}) },
-        body: JSON.stringify({ model: this.config.model, stream: false, messages: [{ role: 'system', content: routingPrompt(payload) }, { role: 'user', content: JSON.stringify(payload) }] }),
+        body: JSON.stringify({ model: this.config.model, stream: false, messages: [{ role: 'system', content: prompt }, { role: 'user', content: JSON.stringify(payload) }] }),
       })
       if (!response.ok) { await response.body?.cancel(); throw new RouterFailure(`ROUTER_HTTP_${response.status}`) }
       const reader = response.body?.getReader()
@@ -32,7 +41,7 @@ export class HttpRouter implements RoutingRouter {
       if (typeof text !== 'string' || !text.trim()) throw new RouterFailure('ROUTER_EMPTY_RESPONSE')
       let decoded: unknown
       try { decoded = JSON.parse(answerJson(text)) } catch { throw new RouterFailure('ROUTER_INVALID_JSON') }
-      return { decision: validateRoutingDecision(decoded, input), model: this.config.model, elapsedMs: Date.now()-started,
+      return { value: decoded, model: this.config.model, elapsedMs: Date.now()-started,
         ...(value.usage && typeof value.usage.total_tokens === 'number' ? { usage: value.usage } : {}) }
     } catch (error) {
       const code = signal?.aborted ? 'ROUTER_ABORTED' : error instanceof RouterFailure ? error.code

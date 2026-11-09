@@ -1,7 +1,8 @@
 export class DesktopController {
   listeners = new Set()
   state = { gateway: null, topics: [], activity: [], loading: false, error: null, active: false, pendingTopicId: null, historyPrompt: false, historyChoices: null,
-    historyModelOptions: null, historyModelSelection: null, historyModelsError: null }
+    historyModelOptions: null, historyModelSelection: null, historyModelsError: null,
+    routerModelOptions: null, routerModelSelection: null, routerModelsError: null, update: null }
   epoch = 0
   constructor(host) { this.host = host; this.record = host.load(); this.state = { ...this.state, pendingTopicId: this.record?.pendingTopicId ?? null }; this.updateActive() }
   getSnapshot = () => this.state
@@ -14,8 +15,18 @@ export class DesktopController {
     if (this.state.active !== !!active) this.emit({ active: !!active })
   }
   cancelNavigation() { this.epoch++ }
+  async preroute({ threadId, text, inputId }) {
+    try {
+      const main = this.record?.threadId ?? (this.record?.clientThreadId && this.host.resolveThread(this.record.clientThreadId))
+      if (!main || main !== threadId || !text?.trim()) return
+      await this.sync()
+      if (this.state.gateway?.enabled === false) return
+      await this.host.call('theone_preroute', { gatewayId: main, text, ...(inputId ? { inputId } : {}) })
+    } catch {} // Sending is independent of speculation, including its error UI.
+  }
   async refresh() {
-    const snapshot = await this.host.call('theone_desktop_state', { profileId: this.host.profileId })
+    const snapshot = await this.host.call('theone_desktop_state', { profileId: this.host.profileId, ...(this.state.cursor ? { cursor: this.state.cursor } : {}) })
+    if (snapshot.cursor && this.state.cursor?.epoch === snapshot.cursor.epoch && snapshot.cursor.seq < this.state.cursor.seq) return this.state
     if (snapshot.gateway) this.save({ ...(this.record?.threadId && this.record.threadId !== snapshot.gateway.gatewayId ? {} : this.record), threadId: snapshot.gateway.gatewayId, workspace: snapshot.gateway.workspace })
     this.emit({ ...snapshot, error: null }); this.updateActive()
     return snapshot
@@ -103,14 +114,29 @@ export class DesktopController {
       return options
     } catch (error) { this.emit({ historyModelsError: error.message }); return null }
   }
-  historySelectModel(change) {
-    const selection = { ...this.state.historyModelSelection, ...change }
-    const model = this.state.historyModelOptions?.models.find(m => m.model === selection.model)
+  selectModel(kind, change) {
+    const selection = { ...this.state[kind + 'ModelSelection'], ...change }
+    const model = this.state[kind + 'ModelOptions']?.models.find(m => m.model === selection.model)
     if (change.model && model) {
-      if (!model.reasoningEfforts.includes(selection.effort)) selection.effort = model.reasoningEfforts.includes('medium') ? 'medium' : model.defaultEffort
+      const preferred = kind === 'router' ? 'low' : 'medium'
+      if (!model.reasoningEfforts.includes(selection.effort)) selection.effort = model.reasoningEfforts.includes(preferred) ? preferred : model.defaultEffort
       if (!model.fastTier) selection.fast = false
     }
-    this.emit({ historyModelSelection: { model: selection.model, effort: selection.effort, fast: selection.fast ?? false } })
+    this.emit({ [kind + 'ModelSelection']: { model: selection.model, effort: selection.effort, fast: selection.fast ?? false } })
+  }
+  historySelectModel(change) { this.selectModel('history', change) }
+  routerSelectModel(change) { this.selectModel('router', change) }
+  async routerModels() {
+    this.emit({ routerModelOptions: null, routerModelSelection: null, routerModelsError: null })
+    try { const options = await this.host.call('theone_router_models', {}); this.emit({ routerModelOptions: options, routerModelSelection: options.selection }); return options }
+    catch (error) { this.emit({ routerModelsError: error.message }); return null }
+  }
+  async routerSave() {
+    return this.action(async () => { const selection = await this.host.call('theone_router_configure', { modelSettings: this.state.routerModelSelection }); this.emit({ routerModelSelection: selection }) })
+  }
+  async checkUpdates(force = false) {
+    try { this.emit({ update: await this.host.call('theone_check_updates', { force }) }) }
+    catch { this.emit({ update: null }) }
   }
   async historyConsent(consent) {
     return this.action(async () => { await this.host.call('theone_history_consent', { consent,

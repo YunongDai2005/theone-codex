@@ -1,0 +1,130 @@
+{
+  "measuredAt": "2026-11-09T17:03:46.704Z",
+  "settings": {
+    "model": "gpt-6.1-terra",
+    "effort": "low",
+    "fast": false
+  },
+  "timeoutMs": 15000,
+  "count": 8,
+  "succeeded": 8,
+  "percentiles": {
+    "method": "nearest-rank, all attempts including failures; milliseconds",
+    "p50": 5901,
+    "p90": 6739
+  },
+  "runs": [
+    {
+      "name": "continuation",
+      "connection": "cold",
+      "ok": true,
+      "elapsedMs": 6318,
+      "routerElapsedMs": 6317,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "“继续”承接当前第一章修改。"
+      }
+    },
+    {
+      "name": "named-topic",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 5280,
+      "routerElapsedMs": 5281,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "SWAP",
+        "contextId": "camp",
+        "reason": "明确回到周末露营计划并补充雨天方案。"
+      }
+    },
+    {
+      "name": "new-task",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4813,
+      "routerElapsedMs": 4812,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "CREATE",
+        "title": "每天十五分钟吉他入门计划",
+        "label": "吉他入门",
+        "reason": "吉他学习计划与现有话题无关",
+        "historyIndependent": true
+      }
+    },
+    {
+      "name": "code-followup",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 5901,
+      "routerElapsedMs": 5901,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "router",
+        "reason": "TheOne proposal 冲突测试属于路由开发"
+      }
+    },
+    {
+      "name": "missing-history",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 6739,
+      "routerElapsedMs": 6739,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "CLARIFY",
+        "question": "你说的是哪个方案？请提供之前的链接。",
+        "reason": "引用了未提供的旧方案和链接"
+      }
+    },
+    {
+      "name": "aside",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 6466,
+      "routerElapsedMs": 6466,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "CREATE",
+        "title": "英寸与厘米换算",
+        "label": "单位换算",
+        "reason": "独立的一次性单位换算问题",
+        "aside": true,
+        "historyIndependent": true
+      }
+    },
+    {
+      "name": "multiple-topics",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 6297,
+      "routerElapsedMs": 6297,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "修改书稿场景，参考露营经历",
+        "relatedIds": [
+          "camp"
+        ]
+      }
+    },
+    {
+      "name": "negated-switch",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4958,
+      "routerElapsedMs": 4958,
+      "model": "gpt-6.1-terra",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "明确继续书稿第一章，露营暂不处理。"
+      }
+    }
+  ]
+}

@@ -2,10 +2,10 @@ import { DesktopController } from './desktop-controller.mjs'
 import { createNativeHost } from './native-host.mjs'
 import { createFoam, foamCss } from './upstream/client-foam.ts'
 import { zh, en } from './upstream/client-locales.ts'
-import { foamModel, foamChanges, foamActions } from './foam-adapter.mjs'
+import { foamModel, foamChanges, foamActions, mergeOutcomes, settleFoamEvents } from './foam-adapter.mjs'
+import { ModelPicker, modelSelectionValid } from './model-picker.mjs'
 
 const statusText = { queued: '排队中', starting: '正在开始', running: '进行中', waiting_approval: '等待确认', completed: '已完成', failed: '未完成', interrupted: '已中断', cancelled: '已取消' }
-const effortText = { none: '不思考', minimal: '最低', low: '轻度', medium: '中度', high: '深度', xhigh: '更深', max: '最高', ultra: '超高' }
 
 export function useDesktop({ React, scope, modules, preview, startDraft, css }) {
   const h = React.createElement
@@ -41,11 +41,15 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
       onPulse: amount => { const mark = button?.querySelector('.theone-symbol'); if (mark) mark.style.transform = amount > .002 ? `scale(${1 + .12 * amount})` : '' },
     })
     let previous
+    const mergeStates = new Map()
     const update = () => {
       const next = controller.getSnapshot()
       if (previous && previous.topics === next.topics && previous.activity === next.activity && previous.gateway === next.gateway && previous.pendingTopicId === next.pendingTopicId) return
       foam.update(foamModel(next))
-      for (const change of foamChanges(previous, next)) foam.event(change)
+        if (previous?.cursor && next.cursor && (previous.cursor.epoch !== next.cursor.epoch || previous.cursor.gatewayId !== next.cursor.gatewayId)) mergeStates.clear()
+      const history = !previous || next.reset ? [] : (next.events ?? []).filter(e => e.seq > (previous.cursor?.seq ?? 0))
+      const ended = mergeOutcomes(mergeStates, [...history.filter(e => e.type === 'merge.changed'), ...next.pendingMerges ?? [], ...next.mergeReceipts ?? []])
+      for (const change of settleFoamEvents([...ended, ...foamChanges(previous, next)], next)) foam.event(change)
       previous = next
     }
     update(); const unsubscribe = controller.subscribe(update)
@@ -54,6 +58,7 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
   }, [controller, host])
   React.useEffect(() => {
     const style = document.createElement('style'); style.textContent = css; style.dataset.theoneControls = 'true'; document.head.append(style)
+    const stopSend = host.watchSend(value => controller.preroute(value))
     let lastLocation = host.current().locationKey
     const stop = host.watch(value => {
       if (controller.opening && !host.openingNative && lastLocation !== value.locationKey) controller.cancelNavigation()
@@ -62,7 +67,8 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
     }, () => controller.record?.clientThreadId)
     // Resolve a persisted main once. Subsequent polling is scoped to the active main or its controls.
     void controller.action(() => controller.refresh())
-    return () => { controller.cancelNavigation(); stop(); style.remove() }
+    void controller.checkUpdates()
+    return () => { controller.cancelNavigation(); stopSend(); stop(); style.remove() }
   }, [controller, host])
   React.useEffect(() => {
     if (!state.active && !panel && !state.topics.length && !state.catalog?.running) return
@@ -73,6 +79,7 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
     if (state.historyPrompt) { setPanel('history'); controller.emit({ historyPrompt: false }) }
   }, [controller, state.historyPrompt])
   React.useEffect(() => { if (panel === 'history') { void controller.historySessions(); void controller.historyModels() } }, [controller, panel])
+  React.useEffect(() => { if (panel === 'settings') { void controller.routerModels(); void controller.checkUpdates() } }, [controller, panel])
   React.useEffect(() => {
     if (panel && !dialog.current.open) dialog.current.showModal()
     else if (!panel && dialog.current.open) dialog.current.close()
@@ -88,8 +95,7 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
   const topics = state.topics.filter(topic => `${topic.title} ${topic.summary ?? ''}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()))
   const history = state.catalog, historyChoices = state.historyChoices
   const modelOptions = state.historyModelOptions, modelSelection = state.historyModelSelection
-  const selectedModel = modelOptions?.models.find(m => m.model === modelSelection?.model)
-  const modelValid = !!selectedModel && selectedModel.reasoningEfforts.includes(modelSelection.effort) && (!modelSelection.fast || !!selectedModel.fastTier)
+  const modelValid = modelSelectionValid(modelOptions, modelSelection)
   const modelDisabled = pending || history?.running
   const included = historyChoices?.sessions.filter(s => !s.excluded).length ?? 0
   const historyTitle = history?.consent === 'granted' ? '整理历史' : '整理以前的聊天'
@@ -102,25 +108,9 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
   const historyPanel = h('div', { className: 'theone-history', 'data-theone-history': true },
     h('p', null, '把以前聊过的事情整理成话题气泡，从这里接着聊。'),
     h('p', { className: 'theone-muted' }, '先选整理模型和思考强度。会消耗当前 Codex 账户的模型额度，原聊天保留原样。'),
-    h('div', { className: 'theone-history-models' },
-      modelOptions ? h(React.Fragment, null,
-        h('label', { className: 'theone-history-model-label' }, '整理模型', h('select', { 'aria-label': '整理模型', value: modelSelection?.model ?? '', disabled: modelDisabled,
-          onChange: e => controller.historySelectModel({ model: e.target.value }) },
-          !selectedModel && h('option', { value: modelSelection?.model ?? '', disabled: true }, modelSelection?.model ? `${modelSelection.model}（当前不可用）` : '请选择模型'),
-          ...modelOptions.models.map(m => h('option', { key: m.model, value: m.model }, m.displayName + (m.model === modelOptions.recommendedModel ? ' · 经济推荐' : ''))))),
-        h('div', { className: 'theone-history-model-detail' },
-          h('label', null, '思考强度', h('select', { 'aria-label': '思考强度', value: modelSelection?.effort ?? '', disabled: modelDisabled || !selectedModel,
-            onChange: e => controller.historySelectModel({ effort: e.target.value }) },
-            selectedModel && !selectedModel.reasoningEfforts.includes(modelSelection?.effort) && h('option', { value: modelSelection?.effort ?? '', disabled: true }, '请选择思考强度'),
-            ...(selectedModel?.reasoningEfforts ?? []).map(e => h('option', { key: e, value: e }, effortText[e] ?? e)))),
-          entry('⚡ 快速', () => controller.historySelectModel({ fast: !modelSelection?.fast }), { className: 'theone-history-fast', 'aria-label': '快速模式', 'aria-pressed': !!modelSelection?.fast,
-            disabled: modelDisabled || !selectedModel?.fastTier, title: selectedModel?.fastTier ? '更快返回，消耗更多额度' : '此模型不支持快速模式' })),
-        h('p', { className: 'theone-muted' }, history?.running ? '如需更换模型或速度，请先暂停整理。'
-          : !selectedModel ? '请选择一个当前可用的模型。' : !selectedModel.fastTier ? '当前模型不支持快速模式。'
-          : modelSelection.fast ? '⚡ 已开启快速：更快返回，会增加额度消耗。' : '标准速度 · 更省额度；可点亮闪电开启快速。'),
-        h('p', { className: 'theone-muted' }, '点击开始后保存选择，后续整理沿用。只影响历史整理。'))
-        : state.historyModelsError ? h('div', { role: 'alert', className: 'theone-native-error' }, '读取模型失败：', state.historyModelsError, entry('重新读取模型', () => controller.historyModels()))
-        : h('p', { role: 'status' }, '正在读取可用模型…')),
+    h(ModelPicker, { React, label: '整理模型', options: modelOptions, selection: modelSelection, select: change => controller.historySelectModel(change),
+      disabled: modelDisabled, busyHint: history?.running ? '如需更换模型或速度，请先暂停整理。' : undefined,
+      saveHint: '点击开始后保存选择，后续整理沿用。只影响历史整理。', error: state.historyModelsError, retry: () => controller.historyModels() }),
     state.error && h('p', { role: 'alert', className: 'theone-native-error' }, state.error),
     history?.running ? h('p', { role: 'status', className: 'theone-history-progress' }, `正在整理 · 已完成 ${history.indexed} 个会话`, history.currentTitle ? ` · ${history.currentTitle}` : '')
       : history?.paused ? h('p', { role: 'status' }, '已暂停，整理好的话题已保留。')
@@ -159,6 +149,14 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
       h('header', null, h('h2', null, title), entry('×', () => setPanel(null), { 'aria-label': '关闭' })),
       panel === 'history' ? historyPanel : panel === 'settings' ? h('div', { className: 'theone-native-settings' },
         history?.available && h('div', { className: 'theone-history-settings' }, entry('整理历史', () => openPanel('history')), h('span', { className: 'theone-muted' }, '把旧聊天整理成话题气泡')),
+        h('section', { className: 'theone-history' },
+          h(ModelPicker, { React, label: '路由模型', options: state.routerModelOptions, selection: state.routerModelSelection, select: change => controller.routerSelectModel(change),
+            disabled: pending, error: state.routerModelsError, retry: () => controller.routerModels() }),
+          h('p', { className: 'theone-muted' }, '会消耗当前 Codex 账户额度；主模型有把握时不额外调用。发送时预路由已启动的调用仍会计入额度。空闲时的重复话题复核也使用此模型。'),
+          entry('保存路由模型', () => perform(() => controller.routerSave()), { disabled: pending || !modelSelectionValid(state.routerModelOptions, state.routerModelSelection) })),
+        h('section', null, entry('检查更新', () => controller.checkUpdates(true)), state.update && h('div', null,
+          h('p', null, '有新版本：', state.update.version), h('a', { href: state.update.url, target: '_blank', rel: 'noreferrer' }, '查看更新'), h('pre', null, state.update.command),
+          h('p', { className: 'theone-muted' }, '手动运行命令后重启 Codex。客户端适配需在源码目录重新构建。'))),
         h('p', { className: 'theone-muted' }, state.gateway?.workspace ?? '发送第一条消息后，主聊天会自动保存在当前项目中。'),
         h('label', null, '启用 TheOne', h('input', { type: 'checkbox', disabled: !state.gateway || pending, checked: state.gateway?.enabled ?? true, onChange: event => perform(() => controller.settings({ enabled: event.target.checked })) })),
         h('label', null, '工作权限', h('select', { disabled: !state.gateway || pending, value: state.gateway?.sandbox ?? 'read-only', onChange: event => perform(() => controller.settings({ sandbox: event.target.value })) }, h('option', { value: 'read-only' }, '只读'), h('option', { value: 'workspace-write' }, '允许修改当前项目'))),
