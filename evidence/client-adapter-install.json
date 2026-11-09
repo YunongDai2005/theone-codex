@@ -1,0 +1,11 @@
+{
+  "installedAt": "2026-11-09T14:24:12.709Z",
+  "adapterVersion": "0.4.2",
+  "launcher": "D:\\doc\\ChatGPT\\gpt-theone\\启动 TheOne Codex.vbs",
+  "executable": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\desktop-client\\26.1103.4239.0-theone-0.4.2\\app\\ChatGPT.exe",
+  "shortcut": "C:\\Users\\Administrator\\Desktop\\Codex TheOne.lnk",
+  "arguments": "\"D:\\doc\\ChatGPT\\gpt-theone\\启动 TheOne Codex.vbs\"",
+  "target": "C:\\Windows\\System32\\wscript.exe",
+  "originalClientPreserved": true,
+  "launched": false
+}

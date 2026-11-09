@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-09T10:11:23.925Z",
+  "isolatedCodexHome": true,
+  "installation": {
+    "pluginId": "gpt-theone@theone-local",
+    "name": "gpt-theone",
+    "marketplaceName": "theone-local",
+    "version": "0.1.0-alpha.1",
+    "installedPath": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\package-validation-r3xKIU\\codex-home\\plugins\\cache\\theone-local\\gpt-theone\\0.1.0-alpha.1",
+    "authPolicy": "ON_INSTALL"
+  },
+  "listing": {
+    "installed": [
+      {
+        "pluginId": "gpt-theone@theone-local",
+        "name": "gpt-theone",
+        "marketplaceName": "theone-local",
+        "version": "0.1.0-alpha.1",
+        "installed": true,
+        "enabled": true,
+        "source": {
+          "source": "local",
+          "path": "D:\\doc\\ChatGPT\\gpt-theone\\release\\gpt-theone"
+        },
+        "marketplaceSource": {
+          "sourceType": "local",
+          "source": "\\\\?\\D:\\doc\\ChatGPT\\gpt-theone\\release"
+        },
+        "installPolicy": "AVAILABLE",
+        "authPolicy": "ON_INSTALL"
+      }
+    ],
+    "available": []
+  },
+  "toolCount": 30,
+  "skillVisible": true,
+  "nativeToolCount": 30,
+  "nativeMcpCallPassed": true,
+  "mcpWorkflowPassed": true
+}

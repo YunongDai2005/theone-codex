@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/YunongDai2005/dsh-theone",
+  "commit": "a943701ad5fcd93d70e05cf409206c14da325b44",
+  "release": "0.4.6",
+  "verifiedRemoteMain": "2026-11-09",
+  "license": "MIT",
+  "files": {
+    "upstream/client-foam.ts": { "source": "src/client-foam.ts", "sha256": "b80fbffac366bd299d9db4c73485b44ba5cc0dc977ca9f0e75194d0eacc58794", "modified": false },
+    "upstream/client-locales.ts": { "source": "src/client-locales.ts", "sha256": "0d041498e60bf43d9e1a2056986a96c932ca8e6fcaa0359de52596640a9d3415", "modified": false }
+  },
+  "adapter": "foam-adapter.mjs maps actual Codex topic/run metadata and operations to the unchanged DSH renderer; desktop-ui.mjs binds layout and theme variables. No simulated activity in production."
+}

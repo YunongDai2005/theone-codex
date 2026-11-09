@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-11-09T11:18:52.899Z",
+  "timezone": "Asia/Shanghai",
+  "desktopVersion": "26.1103.4239.0",
+  "processName": "ChatGPT.exe",
+  "desktopStartedAt": "2026-11-09T19:04:48.5121042+08:00",
+  "pluginVersion": "0.1.0-alpha.2",
+  "pluginInstalledAt": "2026-11-09T18:53:53+08:00",
+  "desktopRestartAfterInstallObserved": true,
+  "initialUserReportedSidebarEntryMissing": true,
+  "preRestartAppLink": {
+    "at": "2026-11-09T10:58:06.453Z",
+    "result": "not-found",
+    "tool": "theone_open"
+  },
+  "currentChatStatusCall": {
+    "version": "0.1.0-alpha.2",
+    "successful": true,
+    "modelTurnStarted": false
+  },
+  "desktopEntrypointCache": {
+    "key": "mcp-global-entrypoints-v3",
+    "fileModifiedAt": "2026-11-09T11:18:36.820Z",
+    "theone": [
+      {
+        "server": "theone",
+        "pluginId": "gpt-theone@theone-local",
+        "tool": "theone_open",
+        "title": "TheOne",
+        "resourceUri": "ui://theone/home.html",
+        "resourceRevision": "[\"gpt-theone@theone-local\",\"0.1.0-alpha.2\"]"
+      }
+    ]
+  },
+  "globalDiscoveryEvidence": "global-discovery-diagnosis.json",
+  "userConfirmedExploreEntryVisible": true,
+  "userConfirmedPinnedEntryInRequestedRegion": false,
+  "requestedPlacement": "Codex 的新聊天 / 你的 dot 所在常驻操作区，保留原生聊天界面",
+  "observedPlacement": "探索 / 更多中的 MCP 全局入口，固定后显示在应用总导航",
+  "clientReadOnlyInspection": {
+    "archiveVersion": "OpenAI.Codex_26.1103.4239.0_x64__2p2nqsd0c76g0",
+    "navigationAsset": "webview/assets/async/499225.6d2e47bea2.js",
+    "catalogAsset": "webview/assets/async/182735.bb2cb0d2af.js",
+    "findings": [
+      "MCP global destinations are created with visibleByDefault:false.",
+      "dS supplies no direct destinations to the ordinary sidebar when navigationRailEnabled is true.",
+      "tFu4 classifies primary destinations using the built-in KEws destination registry.",
+      "t0so global entrypoint schema has type, optional header, and optional quickAction; no sidebar slot or placement field."
+    ],
+    "installedClientModified": false,
+    "internalGatesChanged": false
+  },
+  "conclusion": "The global entrypoint is loaded and user-visible. Its placement does not fulfill the requested native action-area button. Restart or pinning does not resolve that placement gap; no supported plugin slot for that location was found in the current public extension protocol or installed host.",
+  "requiredButtonImplemented": false,
+  "nativeNavigationVerified": false,
+  "officialExtensionSpec": "https://developers.openai.com/plugins/build/extensions",
+  "recordScope": "Historical plugin-only diagnosis before the separately authorized client adapter",
+  "supersededBy": "client-adapter-runtime.json"
+}

@@ -1,0 +1,16 @@
+{
+  "sourceProject": "dsh-theone",
+  "sourceFile": "D:/doc/GitHub/dsh-theone/src/client.ts",
+  "sourceFileSha256": "8fd2116b11bc24ccf001d5ef9cdf80afac9619d1f001e1ad100e7157a24081f3",
+  "copiedAt": "2026-11-09T11:52:30.849Z",
+  "license": "MIT",
+  "copied": [
+    "cellWaves, closedCurve, cellFrame, pumpkinFrame and CellSymbol",
+    "SidebarEntry button, symbol and wordmark CSS"
+  ],
+  "hostAdaptation": [
+    "React bindings",
+    "native theme selector and color-variable mapping",
+    "native navigation row sizing and click action"
+  ]
+}

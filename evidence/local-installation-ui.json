@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-09T15:10:31.979Z",
+  "scope": "actual-local-user",
+  "installed": true,
+  "enabled": true,
+  "version": "0.1.0-alpha.9",
+  "installedRoot": "C:\\Users\\Administrator\\.codex\\plugins\\cache\\theone-local\\gpt-theone\\0.1.0-alpha.9",
+  "bundleSha256": "44b534f86a0906f17be9af4705158c143de1e0e46bc1455fc61538c5306ebcac",
+  "uiSha256": "1e3333ccc313a5ca04a507c34068b465d32811749ac7c0d141261a013571fc67",
+  "nativeToolCount": 43,
+  "nativeMcpCallPassed": true,
+  "nativeSidebarEntrypoint": true,
+  "nativeThreadEntrypoint": true,
+  "nativeResourceReadPassed": true,
+  "nativeOpenPassed": true,
+  "desktopStateToolVerified": true,
+  "historyToolsVerified": true,
+  "historyConsent": "granted",
+  "historyModelChoicesVerified": true,
+  "historyModelSelection": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "fast": false
+  },
+  "skill": [
+    {
+      "name": "gpt-theone:theone",
+      "enabled": true
+    }
+  ],
+  "explicitModelTurnStarted": false,
+  "backgroundHistoryMayRunWithExistingConsent": true,
+  "desktopUiTested": false,
+  "hooksEnabled": false
+}

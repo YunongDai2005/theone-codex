@@ -1,0 +1,38 @@
+
+> gpt-theone@0.1.0-alpha.9 client:test
+> node --test client-adapter/*.test.mjs
+
+✔ rebuild keeps original payload and sidecar metadata, and updates entry and root integrity (24.7904ms)
+✔ refuses in-place mutation, overwrite, and missing replacement targets (25.1963ms)
+✔ rebinds the local executable integrity resource without disabling validation or changing other bytes (3.031ms)
+✔ repeated clicks reuse the same unsent native draft instead of clearing it (3.1718ms)
+✔ first real send binds the main identity; restarting the controller reopens the same chat (0.4121ms)
+✔ choosing a topic mounts it and returns to the main chat without submitting a model message (0.8408ms)
+✔ late metadata does not pull the user back after they leave the opening operation (2.1089ms)
+✔ a missing main chat shows an error without creating another or discarding the binding (0.4638ms)
+✔ changing settings never broadens permissions as part of opening the main chat (0.2723ms)
+✔ a topic selected in an unsent main draft survives the client controller restarting (0.3378ms)
+✔ first opening offers history setup; skipping persists and later organizing preserves the native draft (0.7972ms)
+✔ history checkbox responds immediately and rolls back visibly when saving fails (1.1075ms)
+✔ history setup loads saved model options and sends all three choices on start and later refresh (5.4497ms)
+✔ model-list errors remain visible inside setup even after background status refresh (0.2527ms)
+✔ DSH cells reflect the latest actual work state, selected topic and completed fold (4.3116ms)
+✔ cell gestures use real topic operations and report a refused merge without faking success (0.696ms)
+✔ native draft captures the host draft identity and only pre-fills the plugin mention (5.36ms)
+✔ tool bridge uses the existing local native MCP transport and refuses an account switch (0.6993ms)
+✔ returning to a main chat uses native navigation without changing its composer or sending (1.3415ms)
+✔ home-route native drafts have an identity even though the host sidebar selection is null (0.7851ms)
+✔ adds one native TheOne row immediately below New chat without replacing the remaining controls (16.044ms)
+✔ click opens an editable native Codex draft with the installed plugin mention and current project (9.2722ms)
+✔ leaves the ChatGPT sidebar untouched (11.4289ms)
+✔ refuses an unknown client build and repeated patching (16.9398ms)
+✔ adds TheOne between New chat and Your Dot in the navigation-rail layout used on this desktop (32.1608ms)
+✔ retains the selected project when native navigation chooses the project-specific flow (10.1244ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 834.3116

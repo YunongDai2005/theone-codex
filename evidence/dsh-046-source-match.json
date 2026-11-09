@@ -1,0 +1,15 @@
+{
+  "commit": "a943701ad5fcd93d70e05cf409206c14da325b44",
+  "files": [
+    {
+      "name": "client-foam.ts",
+      "matchesCommittedSource": true,
+      "sha256": "b80fbffac366bd299d9db4c73485b44ba5cc0dc977ca9f0e75194d0eacc58794"
+    },
+    {
+      "name": "client-locales.ts",
+      "matchesCommittedSource": true,
+      "sha256": "0d041498e60bf43d9e1a2056986a96c932ca8e6fcaa0359de52596640a9d3415"
+    }
+  ]
+}

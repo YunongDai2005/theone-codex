@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-09T10:13:28.181Z",
+  "version": "0.1.0-alpha.1",
+  "archive": "D:\\doc\\ChatGPT\\gpt-theone\\release\\gpt-theone-0.1.0-alpha.1.zip",
+  "archiveBytes": 303883,
+  "archiveSha256": "80f34d438f4a71b6ed4f69939620be44cc4d32c64c94de1c70e88197f5276940",
+  "bundleSha256": "425b8a54df27f353843774a09f2c8b1cc8b7bb7f90068c8b3a6ad23b6c3838db",
+  "manifestsParsed": 5,
+  "localDocumentationLinksValid": true,
+  "missing": []
+}

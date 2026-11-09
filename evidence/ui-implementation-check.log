@@ -1,0 +1,117 @@
+
+> gpt-theone@0.1.0-alpha.2 check
+> npm run typecheck && npm test && npm run build
+
+
+> gpt-theone@0.1.0-alpha.2 typecheck
+> tsc --noEmit
+
+
+> gpt-theone@0.1.0-alpha.2 test
+> node scripts/build-ui.mjs && tsx --test tests/*.test.ts tests/upstream/*.test.ts
+
+TheOne UI built (525483 script bytes)
+✔ topics keep their independent state and an explicit reference returns to the original topic (7.4544ms)
+✔ fact lookup respects sharing, and retraction needs actual saved withdrawal evidence (935.2906ms)
+✔ hook only reminds an enabled main chat and never promotes user or history text to instructions (713.3424ms)
+✔ official MCP client can discover, validate and use the topic workflow (1393.7623ms)
+✔ model routing validates candidates and falls back explicitly on malformed results (571.4276ms)
+✔ simultaneous identical model inputs share one in-flight route; conflicting text is rejected (1069.258ms)
+✔ a reopened model gateway reports missing router configuration instead of silently pretending to use it (927.1644ms)
+✔ execution leases block both identical and overlapping workspace roots (330.6459ms)
+✔ queued work rechecks permissions and child-folder work does not bypass project queue (1621.3384ms)
+✔ dead-owner recovery preserves outputs and never restarts an uncertain turn (819.159ms)
+✔ routing persists topics and duplicate inputs cannot silently change text or gateway (571.9364ms)
+✔ private topics do not leak through another topic search or briefing (438.8645ms)
+✔ merge undo restores the source and its searchable messages (1144.2036ms)
+✔ a fact cannot become confirmed through an invented quote (681.0601ms)
+✔ history import requires consent and is idempotent; export survives a reopen (664.6146ms)
+✔ unconfigured and out-of-scope workspaces cannot execute (518.0998ms)
+✔ merging a private source keeps its contents private after the merge (422.1662ms)
+✔ excluded topics remain exportable for backup while being absent from routing/search (86.6568ms)
+✔ a conflicting import is rejected before any new topic from that payload is written (96.142ms)
+✔ task pause aborts an active check, and a completed PR stores a local notice (626.5414ms)
+✔ sidebar entrypoint opens with empty arguments and serves its app without starting work (559.2942ms)
+✔ names fold case, width and spacing but keep C++, C# and .NET apart (1.9322ms)
+✔ only the user’s own words, or an explicit acceptance of a proposal, confirm a value (5.1152ms)
+✔ a newer value supersedes the old one; one current version per fact; proposals never replace confirmed values (19.9018ms)
+✔ a slow write from an earlier turn cannot overwrite a newer value (21.6778ms)
+✔ retracting leaves no value; the fact is out of the shared pool and can be set again later (50.6208ms)
+✔ deliveries are logged every time; the dependency keeps the latest version seen (58.4001ms)
+✔ merging keeps same-named facts apart and dependencies intact; deleting leaves a tombstone (18.9811ms)
+✔ the schema itself refuses a second identity per name and a duplicate version (7.3079ms)
+✔ candidates rank by wording and named topic, and stop at the size budget (7.0639ms)
+✔ an extraction request carries the proposal being accepted and stays within budget (4.9066ms)
+✔ a new topic files itself with a topic it draws on, else with its project folder; otherwise it stays unfiled (11.4434ms)
+✔ a merge can be taken apart: the source comes back as it was, and what it brought leaves the target (57.5005ms)
+✔ a merge into a topic that is later deleted can no longer be taken apart (10.0598ms)
+✔ PR monitoring survives unchanged checks without repeated analysis or notifications, and ends on closure (57.2538ms)
+✔ limits stop future polling and malformed or unbounded schedules are refused (3.9551ms)
+✔ same-project turns wait, other projects proceed, cancelled waiters never acquire (6.2539ms)
+✔ PR research reads only fixed GitHub API paths and reports evidence of failed CI (89.9265ms)
+✔ unsupported URLs are refused before any network access (0.8161ms)
+✔ missing or truncated checks are never reported as successful (4.027ms)
+✔ a closed PR finishes even if the old head commit no longer has accessible checks (0.8345ms)
+✔ router: Qwen 后来怎么解决的？ (1.6368ms)
+✔ router: 那 Q8 为什么慢？ (0.4171ms)
+✔ router: 继续 (0.5565ms)
+✔ router: 不是这个，是论文那个 (0.4383ms)
+✔ router: 不是 Qwen，是论文那个 (0.242ms)
+✔ router: Qwen 跟论文结合一下 (0.4581ms)
+✔ router: 这个跟论文结合一下 (0.1404ms)
+✔ router: 论文跟 Qwen 结合一下 (0.1217ms)
+✔ router: 继续昨天那个 (0.5231ms)
+✔ router: 不是这个，是另一个模型 (0.4904ms)
+✔ router: 我想开始学日语 (0.101ms)
+✔ router: 新话题：学日语 (0.0638ms)
+✔ router: 新话题：Qwen 的新部署实验 (0.0815ms)
+✔ router: 那个模型不行 (0.2031ms)
+✔ combining topics works in one and brings the other along instead of asking which (1.1566ms)
+✔ CREATE planning is atomic and idempotent; interrupted execution cannot repeat (40.1663ms)
+✔ routing regression: 不是 Q8 的问题，是 Qwen 的配置 (0.2108ms)
+✔ routing regression: 不要 Qwen (44.7735ms)
+✔ routing regression: 先不管 Qwen，先把论文改好 (2.0696ms)
+✔ routing regression: 检查论文，然后继续配置 Qwen (1.2347ms)
+✔ routing regression: 还有你说的那个方案，具体怎么做 (0.0831ms)
+✔ routing regression: 合成一个 MD 然后归档 (0.1547ms)
+✔ routing regression: 我想了解摄影 (0.8993ms)
+✔ routing regression: 回到上周那个，继续 (0.1025ms)
+✔ clarification examples come from the supplied catalog (1.3814ms)
+✔ a generic keyword alone starts a standalone topic instead of forcing a switch (0.6377ms)
+✔ snapshot restores exact effective state after add, update, delete, merge, correction and recent sliding (8.759ms)
+✔ snapshot rebuilds on its overlay budget and isolates sessions and anonymous requests (0.6638ms)
+✔ quick, recheck and changed review candidates share a trunk without leaking candidates (1.8547ms)
+✔ compact round trips every action and optional field through the existing semantic validator (2.9023ms)
+✔ compact ids stay stable across order/epochs and stale or unoffered ids fail closed (1.5436ms)
+✔ disabled experiments preserve request bytes and snapshot fixes optional attention template churn (1.0536ms)
+✔ every TheOne database opens in WAL and keeps what was written across a reopen (295.8983ms)
+✔ a database another connection holds stays in its mode and keeps full sync (24.4945ms)
+✔ legacy whole-session mappings are blocked until ranges are supplied (231.6451ms)
+✔ catalog re-extraction keeps the Worker progress note and compaction summary (9.7117ms)
+✔ due tasks execute once, retain their result, and defer the next check (7.8294ms)
+✔ cancelling active work aborts its source request and prevents late findings (2.5306ms)
+✔ errors back off and stop after repeated failures without exposing raw errors (5.8773ms)
+✔ shutdown releases a lease even when an adapter ignores cancellation, and fences its late checkpoint (1.5774ms)
+✔ queued work survives reopening and a duplicate request creates no second task (158.0084ms)
+✔ claims exclude a concurrent owner and expired leases fence off stale results (4.1225ms)
+✔ pause and cancel reject late results and event delivery never resurrects a stopped task (30.1174ms)
+✔ a saved extraction survives retry and unchanged findings produce only one notice (4.582ms)
+✔ A/B keep separate threads, duplicate delivery executes once, returning A resumes its history (488.7006ms)
+✔ approval is bound to one request and cannot be replayed (381.3034ms)
+✔ cancellation stops the actual turn and lets queued work continue (309.7611ms)
+✔ disconnection is reported, never automatically replays a possibly executed turn (218.7459ms)
+✔ worker questions require the matching answer keys and unsupported global requests fail closed (340.8772ms)
+ℹ tests 90
+ℹ suites 0
+ℹ pass 90
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8394.1071
+
+> gpt-theone@0.1.0-alpha.2 build
+> node scripts/build-ui.mjs && tsc -p tsconfig.build.json && node scripts/build-plugin.mjs
+
+TheOne UI built (525483 script bytes)
+{"package":"D:\\doc\\ChatGPT\\gpt-theone\\release\\gpt-theone","serverBytes":1608356,"sha256":"8674135efa2e3399534f6168dbcdb3151c8815283b2337146d6a4dd79a0e0d8c"}

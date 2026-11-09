@@ -1,0 +1,988 @@
+{
+  "checkedAt": "2026-11-09",
+  "cliVersion": "0.167.0-alpha.3.2",
+  "evidenceLevel": "generated-schema-only; no live calls, model requests, account reads, or thread mutations",
+  "requiredMethods": [
+    {
+      "method": "thread/start",
+      "exists": true
+    },
+    {
+      "method": "thread/resume",
+      "exists": true
+    },
+    {
+      "method": "thread/list",
+      "exists": true
+    },
+    {
+      "method": "thread/read",
+      "exists": true
+    },
+    {
+      "method": "thread/turns/list",
+      "exists": true
+    },
+    {
+      "method": "thread/items/list",
+      "exists": true
+    },
+    {
+      "method": "thread/inject_items",
+      "exists": true
+    },
+    {
+      "method": "thread/compact/start",
+      "exists": true
+    },
+    {
+      "method": "turn/start",
+      "exists": true
+    },
+    {
+      "method": "turn/steer",
+      "exists": true
+    },
+    {
+      "method": "turn/interrupt",
+      "exists": true
+    },
+    {
+      "method": "hooks/list",
+      "exists": true
+    },
+    {
+      "method": "model/list",
+      "exists": true
+    }
+  ],
+  "clientMethods": [
+    "account/gatewayOAuth/cancel",
+    "account/gatewayOAuth/login",
+    "account/gatewayOAuth/read",
+    "account/login/cancel",
+    "account/login/start",
+    "account/logout",
+    "account/rateLimitResetCredit/consume",
+    "account/rateLimits/read",
+    "account/read",
+    "account/sendAddCreditsNudgeEmail",
+    "account/usage/read",
+    "account/workspaceMessages/read",
+    "app/installed",
+    "app/list",
+    "app/read",
+    "command/exec",
+    "command/exec/resize",
+    "command/exec/terminate",
+    "command/exec/write",
+    "config/batchWrite",
+    "config/mcpServer/reload",
+    "config/read",
+    "config/value/write",
+    "configRequirements/read",
+    "experimentalFeature/enablement/set",
+    "experimentalFeature/list",
+    "externalAgentConfig/detect",
+    "externalAgentConfig/import",
+    "externalAgentConfig/import/readHistories",
+    "externalAgentConfig/import/recordHistory",
+    "feedback/save",
+    "feedback/upload",
+    "fs/copy",
+    "fs/createDirectory",
+    "fs/getMetadata",
+    "fs/readDirectory",
+    "fs/readFile",
+    "fs/remove",
+    "fs/unwatch",
+    "fs/watch",
+    "fs/writeFile",
+    "fuzzyFileSearch",
+    "hooks/list",
+    "initialize",
+    "marketplace/add",
+    "marketplace/remove",
+    "marketplace/upgrade",
+    "mcpServer/oauth/login",
+    "mcpServer/resource/read",
+    "mcpServer/tool/call",
+    "mcpServerStatus/list",
+    "model/list",
+    "modelProvider/capabilities/read",
+    "permissionProfile/list",
+    "plugin/install",
+    "plugin/installed",
+    "plugin/list",
+    "plugin/read",
+    "plugin/reconcile",
+    "plugin/share/checkout",
+    "plugin/share/delete",
+    "plugin/share/list",
+    "plugin/share/save",
+    "plugin/share/updateTargets",
+    "plugin/skill/read",
+    "plugin/uninstall",
+    "review/start",
+    "skills/config/write",
+    "skills/extraRoots/set",
+    "skills/list",
+    "thread/approveGuardianDeniedAction",
+    "thread/archive",
+    "thread/attachment/add",
+    "thread/attachment/list",
+    "thread/attachment/remove",
+    "thread/attachmentOwner/list",
+    "thread/compact/start",
+    "thread/delete",
+    "thread/fork",
+    "thread/goal/clear",
+    "thread/goal/get",
+    "thread/goal/set",
+    "thread/inject_items",
+    "thread/items/list",
+    "thread/list",
+    "thread/loaded/list",
+    "thread/metadata/update",
+    "thread/name/set",
+    "thread/read",
+    "thread/resume",
+    "thread/revert",
+    "thread/section/move",
+    "thread/shellCommand",
+    "thread/start",
+    "thread/turns/list",
+    "thread/unarchive",
+    "thread/unsubscribe",
+    "threadSection/create",
+    "threadSection/delete",
+    "threadSection/list",
+    "threadSection/update",
+    "turn/interrupt",
+    "turn/start",
+    "turn/steer",
+    "windowsSandbox/readiness",
+    "windowsSandbox/setupStart"
+  ],
+  "experimentalOnlyMethods": [
+    "account/bedrock/checkGovCloudRequirements",
+    "account/bedrock/discover",
+    "account/bedrock/setup",
+    "account/gcp/setup",
+    "accountSession/list",
+    "accountSession/switch",
+    "collaborationMode/list",
+    "environment/add",
+    "environment/info",
+    "environment/status",
+    "fuzzyFileSearch/sessionStart",
+    "fuzzyFileSearch/sessionStop",
+    "fuzzyFileSearch/sessionUpdate",
+    "mcpServer/event/stream/start",
+    "mcpServer/event/stream/stop",
+    "memory/reset",
+    "memory/status",
+    "mock/experimentalMethod",
+    "plugin/search",
+    "process/kill",
+    "process/resizePty",
+    "process/spawn",
+    "process/writeStdin",
+    "project/create",
+    "project/delete",
+    "project/import",
+    "project/list",
+    "project/move",
+    "project/read",
+    "project/update",
+    "remoteControl/client/list",
+    "remoteControl/client/revoke",
+    "remoteControl/disable",
+    "remoteControl/enable",
+    "remoteControl/pairing/start",
+    "remoteControl/pairing/status",
+    "remoteControl/status/read",
+    "rollout/compress",
+    "server/diagnostics",
+    "thread/backgroundTerminals/clean",
+    "thread/backgroundTerminals/list",
+    "thread/backgroundTerminals/terminate",
+    "thread/decrement_elicitation",
+    "thread/guardianReview",
+    "thread/increment_elicitation",
+    "thread/items/read",
+    "thread/memory/read",
+    "thread/memoryMode/set",
+    "thread/prediction/request",
+    "thread/queue/add",
+    "thread/queue/delete",
+    "thread/queue/list",
+    "thread/queue/reorder",
+    "thread/queue/start",
+    "thread/queue/update",
+    "thread/readState/update",
+    "thread/realtime/appendAudio",
+    "thread/realtime/appendSpeech",
+    "thread/realtime/appendText",
+    "thread/realtime/listVoices",
+    "thread/realtime/start",
+    "thread/realtime/stop",
+    "thread/sample",
+    "thread/sample/cancel",
+    "thread/search",
+    "thread/searchOccurrences",
+    "thread/settings/update",
+    "thread/timeline/list",
+    "turn/settings/update",
+    "userVerification/cancel",
+    "userVerification/delete",
+    "userVerification/enroll",
+    "userVerification/status",
+    "userVerification/verify"
+  ],
+  "serverRequests": [
+    "account/chatgptAuthTokens/refresh",
+    "applyPatchApproval",
+    "attestation/generate",
+    "execCommandApproval",
+    "item/commandExecution/requestApproval",
+    "item/fileChange/requestApproval",
+    "item/permissions/requestApproval",
+    "item/tool/call",
+    "item/tool/requestUserInput",
+    "mcpServer/elicitation/request"
+  ],
+  "serverNotifications": [
+    "account/gatewayOAuth/changed",
+    "account/login/completed",
+    "account/rateLimits/updated",
+    "account/updated",
+    "app/list/updated",
+    "autoApprovalReview/strictReviewRequired",
+    "command/exec/outputDelta",
+    "configWarning",
+    "deprecationNotice",
+    "error",
+    "externalAgentConfig/import/completed",
+    "externalAgentConfig/import/progress",
+    "fs/changed",
+    "fuzzyFileSearch/sessionCompleted",
+    "fuzzyFileSearch/sessionUpdated",
+    "guardianWarning",
+    "hook/completed",
+    "hook/started",
+    "item/agentMessage/delta",
+    "item/autoApprovalReview/completed",
+    "item/autoApprovalReview/started",
+    "item/commandExecution/outputDelta",
+    "item/commandExecution/terminalInteraction",
+    "item/completed",
+    "item/fileChange/outputDelta",
+    "item/fileChange/patchUpdated",
+    "item/mcpToolCall/progress",
+    "item/plan/delta",
+    "item/reasoning/summaryPartAdded",
+    "item/reasoning/summaryTextDelta",
+    "item/reasoning/textDelta",
+    "item/started",
+    "mcpServer/event/stream/notification",
+    "mcpServer/oauthLogin/completed",
+    "mcpServer/startupStatus/updated",
+    "model/rerouted",
+    "model/safetyBuffering/updated",
+    "model/verification",
+    "modelProvider/authRecoveryCompleted",
+    "modelProvider/authRecoveryStarted",
+    "process/exited",
+    "process/outputDelta",
+    "project/changed",
+    "remoteControl/status/changed",
+    "serverRequest/resolved",
+    "skills/changed",
+    "thread/archived",
+    "thread/attachment/updated",
+    "thread/closed",
+    "thread/compacted",
+    "thread/deleted",
+    "thread/environment/connected",
+    "thread/environment/disconnected",
+    "thread/goal/cleared",
+    "thread/goal/updated",
+    "thread/name/updated",
+    "thread/prediction/updated",
+    "thread/project/updated",
+    "thread/queue/changed",
+    "thread/readState/changed",
+    "thread/realtime/closed",
+    "thread/realtime/error",
+    "thread/realtime/item/completed",
+    "thread/realtime/item/started",
+    "thread/realtime/item/transcript/delta",
+    "thread/realtime/itemAdded",
+    "thread/realtime/outputAudio/delta",
+    "thread/realtime/sdp",
+    "thread/realtime/started",
+    "thread/realtime/transcript/delta",
+    "thread/realtime/transcript/done",
+    "thread/reverted",
+    "thread/section/changed",
+    "thread/settings/updated",
+    "thread/started",
+    "thread/status/changed",
+    "thread/tokenUsage/updated",
+    "thread/unarchived",
+    "turn/completed",
+    "turn/diff/updated",
+    "turn/moderationMetadata",
+    "turn/plan/updated",
+    "turn/started",
+    "warning",
+    "windows/worldWritableWarning",
+    "windowsSandbox/setupCompleted"
+  ],
+  "selectedShapes": [
+    {
+      "name": "ThreadStartParams",
+      "experimentalOnly": false,
+      "required": [],
+      "properties": {
+        "approvalPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/AskForApproval"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approvalsReviewer": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ApprovalsReviewer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Override where approval requests are routed for review on this thread and subsequent turns."
+        },
+        "baseInstructions": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "config": {
+          "additionalProperties": true,
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "cwd": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "developerInstructions": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ephemeral": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "modelProvider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "personality": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Personality"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "@deprecated `friendly` and `pragmatic` no longer select a style."
+        },
+        "sandbox": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SandboxMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serviceName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serviceTier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sessionStartSource": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ThreadStartSource"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "threadSource": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ThreadSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional client-supplied analytics source classification for this thread."
+        }
+      }
+    },
+    {
+      "name": "TurnStartParams",
+      "experimentalOnly": false,
+      "required": [
+        "input",
+        "threadId"
+      ],
+      "properties": {
+        "approvalPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/AskForApproval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Override the approval policy for this turn and subsequent turns."
+        },
+        "approvalsReviewer": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ApprovalsReviewer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Override where approval requests are routed for review on this turn and subsequent turns."
+        },
+        "clientUserMessageId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cwd": {
+          "description": "Override the working directory for this turn and subsequent turns.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "disabledPluginIds": {
+          "description": "Replace this thread's disabled plugin IDs. Omitted/null preserves the list; [] clears it.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "effort": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ReasoningEffort"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Override the reasoning effort for this turn and subsequent turns."
+        },
+        "input": {
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "type": "array"
+        },
+        "model": {
+          "description": "Override the model for this turn and subsequent turns.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outputSchema": {
+          "description": "Optional JSON Schema used to constrain the final assistant message for this turn."
+        },
+        "parentTurnId": {
+          "description": "ID of the turn that caused this new turn to start.\n\nSet this when starting work on behalf of another turn, such as delegated work in a different thread. Leave unset for work started directly by the user. Ignored when this request adds input to an active turn.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "personality": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Personality"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "@deprecated `friendly` and `pragmatic` no longer select a style. Changing this does not rewrite the thread's existing instructions."
+        },
+        "rootTurnId": {
+          "description": "ID of the first turn in the chain of work that led to this new turn.\n\nWhen setting `parentTurnId`, set this to the parent turn's `rootTurnId` when known. This keeps descendant work attributed to the original turn. If omitted, the new turn becomes its own root. Ignored when this request adds input to an active turn.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandboxPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SandboxPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Override the sandbox policy for this turn and subsequent turns."
+        },
+        "serviceTier": {
+          "description": "Override the service tier for this turn and subsequent turns.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "serviceTierForTurn": {
+          "description": "Override the service tier only when this request starts a new turn. Use \"default\" for standard speed. Omitted or null inherits the thread's tier. Does not change the thread's tier or a turn being steered.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ReasoningSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Override the reasoning summary for this turn and subsequent turns."
+        },
+        "threadId": {
+          "type": "string"
+        },
+        "toolOutput": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TurnToolOutput"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "turnTrigger": {
+          "description": "Optional source classification for the caller that starts this turn. Ignored when this request steers an already-active turn.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    {
+      "name": "TurnSteerParams",
+      "experimentalOnly": false,
+      "required": [
+        "expectedTurnId",
+        "input",
+        "threadId"
+      ],
+      "properties": {
+        "clientUserMessageId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expectedTurnId": {
+          "description": "Required active turn id precondition. The request fails when it does not match the currently active turn.",
+          "type": "string"
+        },
+        "input": {
+          "items": {
+            "$ref": "#/definitions/UserInput"
+          },
+          "type": "array"
+        },
+        "threadId": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "ThreadListParams",
+      "experimentalOnly": false,
+      "required": [],
+      "properties": {
+        "archived": {
+          "description": "Optional archived filter; when set to true, only archived threads are returned. If false or null, only non-archived threads are returned.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "cursor": {
+          "description": "Opaque pagination cursor returned by a previous call.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cwd": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ThreadListCwdFilter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional cwd filter or filters; when set, only threads whose session cwd exactly matches one of these paths are returned."
+        },
+        "excludedThreadIds": {
+          "description": "Thread IDs to exclude before applying the result limit. Up to 100 entries; invalid IDs or a larger list are rejected, never truncated. Send the same exclusions on each page. Omitted, null, or empty means no exclusions.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "limit": {
+          "description": "Optional page size; defaults to a reasonable server-side value.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "modelProviders": {
+          "description": "Optional provider filter; when set, only sessions recorded under these providers are returned. When present but empty, includes all providers.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "originators": {
+          "description": "Optional originator allowlist, matching any supplied value exactly. Supported by hosted backends only; the local app-server rejects a nonempty list. Omitted or empty lists leave originators unrestricted.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "searchTerm": {
+          "description": "Optional substring filter for the extracted thread title.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sectionId": {
+          "description": "Omit to include every section, set to `null` for unsectioned threads, or provide a section ID to return only threads in that section.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sortDirection": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SortDirection"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional sort direction; defaults to descending (newest first)."
+        },
+        "sortKey": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ThreadSortKey"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional sort key; defaults to created_at."
+        },
+        "sourceKinds": {
+          "description": "Optional source filter; when set, only sessions from these source kinds are returned. When omitted or empty, defaults to interactive sources.",
+          "items": {
+            "$ref": "#/definitions/ThreadSourceKind"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "useStateDbOnly": {
+          "description": "If true, return from the state DB without scanning JSONL rollouts to repair thread metadata. Omitted or false preserves scan-and-repair behavior.",
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "name": "ThreadInjectItemsParams",
+      "experimentalOnly": false,
+      "required": [
+        "items",
+        "threadId"
+      ],
+      "properties": {
+        "items": {
+          "description": "Raw Responses API items to append to the thread's model-visible history.",
+          "items": true,
+          "type": "array"
+        },
+        "threadId": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "ThreadSampleParams",
+      "experimentalOnly": true,
+      "required": [
+        "expectedTurnId",
+        "prompt",
+        "threadId"
+      ],
+      "properties": {
+        "disableMcp": {
+          "description": "Disable MCP servers when the inherited window uses incremental tools on Responses Lite.",
+          "type": "boolean"
+        },
+        "effort": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ReasoningEffort"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Applied only when the provider and model support cache-preserving reasoning-effort updates."
+        },
+        "expectedTurnId": {
+          "description": "The loaded source's latest completed, failed, or interrupted turn. Stale or active sources are rejected.",
+          "type": "string"
+        },
+        "interruptOnCancel": {
+          "description": "Override upstream interruption on cancellation for this sample; otherwise inherit the parent.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "responsesapiClientMetadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional metadata to enrich Codex's ResponsesAPI turn metadata.",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "threadId": {
+          "type": "string"
+        },
+        "threadSource": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ThreadSource"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "turnTrigger": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ThreadSampleResponse",
+      "experimentalOnly": true,
+      "required": [
+        "responseId",
+        "sourceTurnId"
+      ],
+      "properties": {
+        "cachedInputTokens": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "inputTokens": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "outputTokens": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "responseId": {
+          "type": "string"
+        },
+        "sourceTurnId": {
+          "type": "string"
+        },
+        "text": {
+          "description": "Assistant text from the response, or null if it attempted a tool call or completed without text.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ThreadSearchParams",
+      "experimentalOnly": true,
+      "required": [
+        "searchTerm"
+      ],
+      "properties": {
+        "archived": {
+          "description": "Optional archived filter; when set to true, only archived threads are returned. If false or null, only non-archived threads are returned.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "cursor": {
+          "description": "Opaque pagination cursor returned by a previous call.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limit": {
+          "description": "Optional page size; defaults to a reasonable server-side value.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "searchTerm": {
+          "description": "Required substring/full-text query for thread search.",
+          "type": "string"
+        },
+        "sortDirection": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SortDirection"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional sort direction; defaults to descending (newest first)."
+        },
+        "sortKey": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ThreadSearchSortKey"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional sort key; defaults to created_at."
+        },
+        "sourceKinds": {
+          "description": "Optional source filter; when set, only sessions from these source kinds are returned. When omitted or empty, defaults to interactive sources.",
+          "items": {
+            "$ref": "#/definitions/ThreadSourceKind"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      }
+    }
+  ],
+  "schemaHashes": {
+    "ClientRequest": "94074a415950787a25e09ae3b4d9de312cc264eb0f021633dfca921d300cd42a",
+    "ServerRequest": "58df585160941977d6e7a0ce458750b0c0d37987ce326fc4c880bf1dfbd3802f",
+    "ServerNotification": "6371619bc83dd2c7a3ff348704d514c5be9f0d8e992275a1fa592cf51bfd2c1f"
+  }
+}

@@ -1,0 +1,1298 @@
+{
+  "checkedAt": "2026-11-09",
+  "sourceRoot": "D:/doc/GitHub/dsh-theone",
+  "commit": "fe436d005be92541ceb82495eacf83d7230c2488",
+  "files": [
+    {
+      "path": "src/catalog-types.ts",
+      "lines": 35,
+      "bytes": 2514,
+      "sha256": "b7c6b5da2ee1098d6bf99b6d88220da33e68b4771b64d4555513310e62f43085",
+      "imports": [
+        {
+          "module": "./topic-memory.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/client-locales.ts",
+      "lines": 866,
+      "bytes": 54442,
+      "sha256": "5e208b9e7425708ccd794071e5152227efb5b1e53a3c6683b800cade0126c779",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-client-ui-slots",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/client-navigation.ts",
+      "lines": 50,
+      "bytes": 1942,
+      "sha256": "0ab4d2e7294940ed3a469f66e4efa887671026a96e8a592c123e2ce4a9cfde87",
+      "imports": []
+    },
+    {
+      "path": "src/client-season.ts",
+      "lines": 3,
+      "bytes": 194,
+      "sha256": "773fae726131ae25842b9e01d85ef8d7ac18c1b18fdabbcc8e64bb77f1aeb381",
+      "imports": []
+    },
+    {
+      "path": "src/client-session-visibility.ts",
+      "lines": 39,
+      "bytes": 1427,
+      "sha256": "7307bc1980fba2a789d03cc9b14c19aa2c73f5e4ad18fc94d71df7cfe52b61e8",
+      "imports": []
+    },
+    {
+      "path": "src/client-setup.ts",
+      "lines": 267,
+      "bytes": 24526,
+      "sha256": "02c00d2b48653ddb1b8f4228259a6c33e9a914088827f6fc809a21362b1ff628",
+      "imports": [
+        {
+          "module": "./settings-types.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/client-work.ts",
+      "lines": 100,
+      "bytes": 8799,
+      "sha256": "9cf13f643e798bd852379916e018c6366e3eb3d30e77128ed322b3a55e7d88d1",
+      "imports": [
+        {
+          "module": "react",
+          "typeOnly": false
+        },
+        {
+          "module": "./persistent-work.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./work-store.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./client-locales.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/client.ts",
+      "lines": 2237,
+      "bytes": 183977,
+      "sha256": "8fd2116b11bc24ccf001d5ef9cdf80afac9619d1f001e1ad100e7157a24081f3",
+      "imports": [
+        {
+          "module": "react",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-sidebar/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-renderer/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-layout/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-workspace/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-model-selection/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-api-session-controller/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-api-workspace-controller/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-locale/client",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-slots",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-session/types",
+          "typeOnly": true
+        },
+        {
+          "module": "./client-session-visibility.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-client-ui-layout/client",
+          "typeOnly": true
+        },
+        {
+          "module": "./catalog-types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./update.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./notices.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./settings-types.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./client-navigation.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./client-season.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./client-setup.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./client-locales.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./weixin-link.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./telegram-bot.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./imessage-db.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./remote-link.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "qrcode-generator",
+          "typeOnly": false
+        },
+        {
+          "module": "./client-work.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/fact-flow.ts",
+      "lines": 140,
+      "bytes": 11475,
+      "sha256": "2b4ef860342749d48a67475f413b8245d9ac747b2448c7214743dfe9fee10426",
+      "imports": [
+        {
+          "module": "./store.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./linkage.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./facts.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/facts.ts",
+      "lines": 221,
+      "bytes": 13674,
+      "sha256": "8cabd06d4222655d422a2347f46bbef816641ca0516f98a17c1cea3bbf3c8a9f",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/feedback.ts",
+      "lines": 145,
+      "bytes": 8991,
+      "sha256": "84a4789111d5e9d543a10406454a9dc365daa002d9bf7aa6216a2f7e0819b978",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/gateway-compaction.ts",
+      "lines": 126,
+      "bytes": 7492,
+      "sha256": "6e56892595372390ffffc806f4a0e6b3d95ef00b229ccf0786a7ecdf8ea65ad8",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-compaction",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/history-catalog.ts",
+      "lines": 345,
+      "bytes": 24296,
+      "sha256": "64f045c860d8cecf4dfcbcae42598457af85f4240ff9aa084e182b8d80e97be9",
+      "imports": [
+        {
+          "module": "node:path",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": false
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-compaction/types",
+          "typeOnly": true
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./model-json.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./store.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./catalog-types.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/imessage-db.ts",
+      "lines": 176,
+      "bytes": 8313,
+      "sha256": "675612e26c9978abb142536b4c3abce49827a96bf6e366e5c776074a26c5f49a",
+      "imports": [
+        {
+          "module": "node:sqlite",
+          "typeOnly": false
+        },
+        {
+          "module": "node:child_process",
+          "typeOnly": false
+        },
+        {
+          "module": "node:os",
+          "typeOnly": false
+        },
+        {
+          "module": "node:path",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-link.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/imessage.ts",
+      "lines": 52,
+      "bytes": 2175,
+      "sha256": "01be335d2691fd1ef285ce2460e863dfcb099bcda50772447f0e78e88eaa5799",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "./remote-relay.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-plain.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-app.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./imessage-db.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/index.ts",
+      "lines": 4108,
+      "bytes": 294418,
+      "sha256": "7a143c05369357eed04b9a340b66d582715d141630b7fee491b064da17b91fdd",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/schemastery",
+          "typeOnly": false
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "node:async_hooks",
+          "typeOnly": false
+        },
+        {
+          "module": "node:fs",
+          "typeOnly": false
+        },
+        {
+          "module": "node:fs/promises",
+          "typeOnly": false
+        },
+        {
+          "module": "node:os",
+          "typeOnly": false
+        },
+        {
+          "module": "node:path",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-tools",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-tools",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-compaction/types",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent-default-model",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-workspace",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-user-approval/types",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-user-approval",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-user-questions",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-sandbox-policy",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-permission-presets",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-session-query",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-session-query",
+          "typeOnly": true
+        },
+        {
+          "module": "./history-catalog.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./gateway-compaction.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./learning-journal.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./store.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-bindings.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-shadow.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./router.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-experiments.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./model-json.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./catalog-types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./settings-types.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./settings.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./run.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./linkage.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./facts.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./fact-flow.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-evidence.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./topic-memory.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./store.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./update.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./notices.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./feedback.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "node:module",
+          "typeOnly": false
+        },
+        {
+          "module": "./lifecycle.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./weixin.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./telegram.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./imessage.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-app.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./persistent-work.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./work-store.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./work-scheduler.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./project-queue.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/learning-journal.ts",
+      "lines": 170,
+      "bytes": 11419,
+      "sha256": "14a783fc9e6aed9eb2766f8e827aeb8fae193cd8670b47135654fa815344bd13",
+      "imports": [
+        {
+          "module": "node:sqlite",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/lifecycle.ts",
+      "lines": 91,
+      "bytes": 5671,
+      "sha256": "4eb5d9c993174bbc1f7f2867b74ebc90fcb12e55c9117ffcb42340acca93ce66",
+      "imports": []
+    },
+    {
+      "path": "src/linkage.ts",
+      "lines": 173,
+      "bytes": 10940,
+      "sha256": "1ec70b8d093d488c1e59bc7b6240604dbc7847264a2fd34a97902c75314812f1",
+      "imports": [
+        {
+          "module": "./store.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/llm-router.ts",
+      "lines": 423,
+      "bytes": 33822,
+      "sha256": "9d9bb26711590865c6b733fce2b295b36830b431cbf1c7a6bbea25775c188061",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": true
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-experiments.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-bindings.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./learning-journal.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./facts.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-evidence.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/model-json.ts",
+      "lines": 45,
+      "bytes": 2931,
+      "sha256": "72e8b217478a838557734b70588bccd225b2bff48bd364c55951afa53a5b7546",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": false
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/notices.ts",
+      "lines": 101,
+      "bytes": 5050,
+      "sha256": "e24c8ebbfa5d3e38f3f173882083c5576baf3dc12a3b3071cdc56340e3237cb7",
+      "imports": [
+        {
+          "module": "./update.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/persistent-work.ts",
+      "lines": 105,
+      "bytes": 7190,
+      "sha256": "32ec7eb303df183b8239dd63add9756491e1c83765c2c5bfb0424f16d2864574",
+      "imports": [
+        {
+          "module": "./work-store.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./work-scheduler.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./research.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/project-queue.ts",
+      "lines": 46,
+      "bytes": 1900,
+      "sha256": "90b553e11773a9aa4a23082f18d72c0ba8d857d9dabdfec841494217ab61e7a0",
+      "imports": [
+        {
+          "module": "node:fs",
+          "typeOnly": false
+        },
+        {
+          "module": "node:path",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/remote-app.ts",
+      "lines": 61,
+      "bytes": 2365,
+      "sha256": "73d2bf256d400da00a2d1b082c49740689ba7249263326d08827d5c73b4a93f1",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "./remote-relay.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./remote-link.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/remote-link.ts",
+      "lines": 255,
+      "bytes": 10490,
+      "sha256": "1fcc3986ec73d36bdf7c90b66f954d6a031e787a865081005cab5cbd2f146c12",
+      "imports": []
+    },
+    {
+      "path": "src/remote-plain.ts",
+      "lines": 41,
+      "bytes": 2005,
+      "sha256": "878711c666eb84542f4bbc3ddfa732a7f4355b662bec017d4a7baf766a867f83",
+      "imports": []
+    },
+    {
+      "path": "src/remote-relay.ts",
+      "lines": 240,
+      "bytes": 13837,
+      "sha256": "79f99687fc3ee5cb490a744a1ae22173c5446eaa9dd7179696608fa9d0466695",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/research.ts",
+      "lines": 58,
+      "bytes": 4714,
+      "sha256": "a3bd497294cdf0f786d63a2bfa5895c5c390323aaa03ec230555472849796160",
+      "imports": [
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/router.ts",
+      "lines": 56,
+      "bytes": 4749,
+      "sha256": "deccee1d626e12bdffa81612063a18bfc08396c464006d1ae8d9fc9c44b0c434",
+      "imports": [
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/routing-bindings.ts",
+      "lines": 166,
+      "bytes": 10922,
+      "sha256": "7e6df1c034b9869570fc5aad1317b646f28f3eb96ddde09ae08ca9b6766015ea",
+      "imports": [
+        {
+          "module": "node:sqlite",
+          "typeOnly": true
+        },
+        {
+          "module": "./sqlite.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "./learning-journal.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/routing-evidence.ts",
+      "lines": 79,
+      "bytes": 5052,
+      "sha256": "3763f7cf8657b343fcbf62db1c07ab57b73642b49916c97d7227ac50a60dee9b",
+      "imports": [
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./routing-policy.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/routing-experiments.ts",
+      "lines": 156,
+      "bytes": 9901,
+      "sha256": "a1b89f1862dde32e390e5001fa22ae1603f5a419c0c5be4da710ea17919d8d41",
+      "imports": [
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "./llm-router.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/routing-policy.ts",
+      "lines": 142,
+      "bytes": 10075,
+      "sha256": "9564806fd75d329bffb665a8bc15d6b892cb76a297c940a3365b2ab93c8dd87f",
+      "imports": [
+        {
+          "module": "node:path",
+          "typeOnly": false
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/routing-shadow.ts",
+      "lines": 147,
+      "bytes": 9162,
+      "sha256": "b7f7a07ba0cc65a9226a6bc352984db55b0ad7bd10124ed8740237529a3b83f5",
+      "imports": [
+        {
+          "module": "node:sqlite",
+          "typeOnly": true
+        },
+        {
+          "module": "./sqlite.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/run.ts",
+      "lines": 229,
+      "bytes": 11264,
+      "sha256": "be2e1f8f1403467e8f0ebfad599bef7e8c96dac1919d532e47e174ab7dda17ac",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": false
+        },
+        {
+          "module": "@deepseek-ai/dsh-llm",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-session",
+          "typeOnly": true
+        },
+        {
+          "module": "@deepseek-ai/dsh-tools",
+          "typeOnly": true
+        }
+      ]
+    },
+    {
+      "path": "src/settings-types.ts",
+      "lines": 34,
+      "bytes": 2215,
+      "sha256": "ae7bb9598e472f5dfbecc4d66fcd762f0f3810aa0e081a724686156fdc91c210",
+      "imports": []
+    },
+    {
+      "path": "src/settings.ts",
+      "lines": 36,
+      "bytes": 2951,
+      "sha256": "ee4dc1a06a81de8bcb4f7e960b2b00026e2e6d603406ebe0a2ba2079526c47e9",
+      "imports": [
+        {
+          "module": "./settings-types.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/sqlite.ts",
+      "lines": 16,
+      "bytes": 879,
+      "sha256": "b51c5e3124dde9cbb5f21bc8d3112358b26f5a1191103b387f1e01c365c61d6e",
+      "imports": [
+        {
+          "module": "node:sqlite",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/store.ts",
+      "lines": 1834,
+      "bytes": 119583,
+      "sha256": "4498bac3d9e144322ac2f471ab2c00c9b76789a4c70b2e19c80fb0bffe2d44a1",
+      "imports": [
+        {
+          "module": "@deepseek-ai/dsh-agent",
+          "typeOnly": true
+        },
+        {
+          "module": "node:sqlite",
+          "typeOnly": true
+        },
+        {
+          "module": "./sqlite.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "node:fs",
+          "typeOnly": false
+        },
+        {
+          "module": "node:path",
+          "typeOnly": false
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "./catalog-types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./types.ts",
+          "typeOnly": true
+        },
+        {
+          "module": "./facts.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./learning-journal.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./topic-memory.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/telegram-bot.ts",
+      "lines": 146,
+      "bytes": 7553,
+      "sha256": "622680bd326867084f8c9142045c92780c1d871118956640c46746e31504beb6",
+      "imports": [
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-link.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/telegram.ts",
+      "lines": 69,
+      "bytes": 3247,
+      "sha256": "70e3a40a293c2935b43b2e42c1e6d9eec1dab27d6fe4c403131b36d55907bfdf",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "./remote-relay.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-plain.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-app.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./telegram-bot.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/topic-memory.ts",
+      "lines": 157,
+      "bytes": 10839,
+      "sha256": "ff42b1d070f9bb9b0fc62742d8a82ccb903ebce68c0dcca9c0f01cbcca689c1d",
+      "imports": []
+    },
+    {
+      "path": "src/types.ts",
+      "lines": 85,
+      "bytes": 3305,
+      "sha256": "61da9979dd0f14cce3d825896f32c857c5e53eff19144a4c4c80f18207aaf588",
+      "imports": []
+    },
+    {
+      "path": "src/update.ts",
+      "lines": 276,
+      "bytes": 15480,
+      "sha256": "34ede1dc1c47daf3a3368f98cff61f250f451d7ab813b518b04c9667779c1189",
+      "imports": [
+        {
+          "module": "node:fs",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/weixin-ilink.ts",
+      "lines": 201,
+      "bytes": 11201,
+      "sha256": "050f952f78601dc0ddc6e3c98ee3556b399b3cc6c212e8e41bf556586ad13cd4",
+      "imports": [
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/weixin-link.ts",
+      "lines": 137,
+      "bytes": 5458,
+      "sha256": "eeb102b6b7bb9c1c7ac3058342b39c0450799bb16a2943be1171c4ffd182e832",
+      "imports": [
+        {
+          "module": "./weixin-ilink.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-link.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/weixin.ts",
+      "lines": 70,
+      "bytes": 2853,
+      "sha256": "3579661a2f5c4990ecf0ddfceefd7974d939ba5a4f675f23c9dcae80e67a1834",
+      "imports": [
+        {
+          "module": "@deepseek-ai/cordis",
+          "typeOnly": true
+        },
+        {
+          "module": "./remote-relay.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-plain.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./remote-app.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./weixin-ilink.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "./weixin-link.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/work-scheduler.ts",
+      "lines": 70,
+      "bytes": 3319,
+      "sha256": "5d85483372de6b498bfa0576e64d58592f8651f24ffbc2716e83322c36447a17",
+      "imports": [
+        {
+          "module": "./work-store.ts",
+          "typeOnly": false
+        }
+      ]
+    },
+    {
+      "path": "src/work-store.ts",
+      "lines": 124,
+      "bytes": 8136,
+      "sha256": "956826ce173cfb54ad98d579cd7e02dafbf28247ad59948c1945fa15cc6220be",
+      "imports": [
+        {
+          "module": "node:sqlite",
+          "typeOnly": true
+        },
+        {
+          "module": "./sqlite.ts",
+          "typeOnly": false
+        },
+        {
+          "module": "node:crypto",
+          "typeOnly": false
+        },
+        {
+          "module": "node:fs",
+          "typeOnly": false
+        },
+        {
+          "module": "node:path",
+          "typeOnly": false
+        }
+      ]
+    }
+  ]
+}

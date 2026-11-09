@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-09T10:52:39.049Z",
+  "realMcpService": true,
+  "simulatedNativeHost": true,
+  "desktopUiTested": false,
+  "checks": [
+    "native new draft metadata",
+    "duplicate notification guard",
+    "no replacement chat composer",
+    "topic selection to active draft",
+    "new topic to active draft",
+    "HTML title safety",
+    "unsupported host fails closed",
+    "no worker execution on open"
+  ]
+}

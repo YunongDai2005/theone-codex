@@ -1,0 +1,61 @@
+{
+  "at": "2026-11-09T15:07:08.187Z",
+  "mode": "before",
+  "syntheticInput": true,
+  "selection": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "fast": false
+  },
+  "chats": 4,
+  "turns": 16,
+  "totalMs": 39335,
+  "maxInFlight": 1,
+  "calls": [
+    {
+      "method": "classify",
+      "ms": 9221,
+      "outputBytes": 489,
+      "compactReplies": 0
+    },
+    {
+      "method": "classify",
+      "ms": 11648,
+      "outputBytes": 532,
+      "compactReplies": 0
+    },
+    {
+      "method": "classify",
+      "ms": 8635,
+      "outputBytes": 499,
+      "compactReplies": 0
+    },
+    {
+      "method": "classify",
+      "ms": 9796,
+      "outputBytes": 540,
+      "compactReplies": 0
+    }
+  ],
+  "topics": 2,
+  "messages": 32,
+  "outputBytes": 2060,
+  "status": {
+    "running": false,
+    "indexed": 4,
+    "scanned": 4,
+    "failed": 0,
+    "pending": 0,
+    "excluded": 0,
+    "batches": 4,
+    "lastCompletedAt": 1794236828185,
+    "paused": false,
+    "consent": "granted",
+    "available": true,
+    "modelSettings": {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "fast": false
+    }
+  }
+}

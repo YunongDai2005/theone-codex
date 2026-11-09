@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-09T14:17:50.142Z",
+  "syntheticModelInput": true,
+  "realModel": true,
+  "modelSelection": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "fast": false
+  },
+  "availableModels": [
+    "gpt-6.1-sol",
+    "gpt-6-astra",
+    "gpt-6.1-terra",
+    "gpt-6-sol",
+    "gpt-6-luna",
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "gpt-5.6-luna"
+  ],
+  "nativeMetadataCount": 127,
+  "nativeReadTurnCount": 12,
+  "topicTitles": [
+    "云南旅行规划",
+    "小说章节大纲"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "at": "2026-11-09T14:29:12.601Z",
+  "syntheticInput": true,
+  "selection": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "fast": false
+  },
+  "runs": [
+    {
+      "batch": 1,
+      "turns": 16,
+      "topics": 2,
+      "totalMs": 9368,
+      "requests": [
+        {
+          "method": "initialize",
+          "milliseconds": 344
+        },
+        {
+          "method": "model/list",
+          "milliseconds": 3
+        },
+        {
+          "method": "config/read",
+          "milliseconds": 9
+        },
+        {
+          "method": "thread/start",
+          "milliseconds": 136
+        },
+        {
+          "method": "turn/start",
+          "milliseconds": 18
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict'
+export async function verifyHistoryUi(page, button, report) {
+  await button.click()
+  const dialog = page.getByRole('dialog', { name: '整理以前的聊天', exact: true })
+  await dialog.waitFor({ timeout: 10000 })
+  const model = dialog.getByRole('combobox', { name: '整理模型', exact: true }), effort = dialog.getByRole('combobox', { name: '思考强度', exact: true })
+  const fast = dialog.getByRole('button', { name: '快速模式', exact: true })
+  await model.waitFor()
+  assert.equal(await model.inputValue(), 'gpt-6-luna'); assert.equal(await effort.inputValue(), 'medium')
+  assert.equal(await fast.getAttribute('aria-pressed'), 'false')
+  await fast.click(); assert.equal(await fast.getAttribute('aria-pressed'), 'true')
+  await model.selectOption('basic')
+  assert.equal(await fast.isDisabled(), true); assert.equal(await fast.getAttribute('aria-pressed'), 'false')
+  assert.equal(await effort.inputValue(), 'low')
+  report.historyEconomyDefaultsVerified = true; report.unsupportedFastDisabled = true
+  report.historyFirstUseVerified = true
+  await dialog.getByRole('button', { name: '暂时跳过', exact: true }).click()
+  await dialog.waitFor({ state: 'hidden' })
+  const editor = page.locator('[contenteditable="true"][role="textbox"]').first()
+  await editor.waitFor({ state: 'visible' })
+  await editor.click(); await page.keyboard.insertText('历史整理后保留这条草稿')
+  await button.click()
+  assert.equal(await dialog.isVisible(), false)
+  await button.click({ button: 'right' })
+  await page.getByRole('dialog', { name: 'TheOne 设置' }).getByRole('button', { name: '整理历史', exact: true }).click()
+  await dialog.waitFor()
+  await model.waitFor()
+  assert.equal(await model.inputValue(), 'gpt-6-luna'); assert.equal(await effort.inputValue(), 'medium')
+  await fast.click()
+  const visual = await dialog.evaluate(element => {
+    const r = element.getBoundingClientRect(), input = element.querySelector('input[type="checkbox"]')
+    return { appearance: getComputedStyle(input).appearance, centered: Math.abs(r.x + r.width / 2 - innerWidth / 2) < 5 }
+  })
+  assert.notEqual(visual.appearance, 'none'); assert.equal(visual.centered, true)
+  await dialog.getByRole('checkbox', { name: '不参与整理的会话', exact: true }).uncheck()
+  await dialog.getByRole('button', { name: '整理 2 个会话', exact: true }).waitFor()
+  await dialog.screenshot({ path: 'evidence/history-setup.png' })
+  await dialog.getByRole('button', { name: '整理 2 个会话', exact: true }).click()
+  await dialog.waitFor({ state: 'hidden' })
+  await page.waitForFunction(() => document.querySelectorAll('.theone-foam-list button').length === 2, { timeout: 30000 })
+  assert.ok((await editor.innerText()).includes('历史整理后保留这条草稿'))
+  report.historyGeneratedCellsVerified = true; report.nativeDraftVerified = true
+  await button.click({ button: 'right' })
+  await page.getByRole('dialog', { name: 'TheOne 设置' }).getByRole('button', { name: '整理历史', exact: true }).click()
+  const manual = page.getByRole('dialog', { name: '整理历史', exact: true })
+  await manual.getByRole('combobox', { name: '整理模型', exact: true }).waitFor()
+  assert.equal(await manual.getByRole('combobox', { name: '整理模型', exact: true }).inputValue(), 'gpt-6-luna')
+  assert.equal(await manual.getByRole('combobox', { name: '思考强度', exact: true }).inputValue(), 'medium')
+  assert.equal(await manual.getByRole('button', { name: '快速模式', exact: true }).getAttribute('aria-pressed'), 'true')
+  report.historyModelSelectionPersisted = true; report.historyFastSelectionApplied = true
+  await manual.getByText('已整理 2 个会话', { exact: true }).waitFor({ timeout: 30000 })
+  await manual.getByRole('button', { name: '再次整理', exact: true }).click()
+  await manual.waitFor({ state: 'hidden' })
+  await page.waitForTimeout(1500)
+  assert.equal(await page.locator('.theone-foam-list button').count(), 2)
+  report.historyManualRefreshVerified = true; report.historyExclusionVerified = true; report.historyDraftPreserved = true
+  await page.locator('[data-theone-native-entry]').locator('..').screenshot({ path: 'evidence/history-generated-cells.png' })
+}

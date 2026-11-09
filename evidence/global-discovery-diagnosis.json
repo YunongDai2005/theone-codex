@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-09T11:12:20.846Z",
+  "scope": "global-no-thread",
+  "nextCursor": null,
+  "serverCount": 9,
+  "theone": [
+    {
+      "name": "theone",
+      "pluginId": "gpt-theone@theone-local",
+      "toolCount": 33,
+      "toolsError": null,
+      "entrypoints": [
+        {
+          "name": "theone_panel",
+          "ui": {
+            "entrypoints": [
+              {
+                "type": "thread"
+              }
+            ]
+          }
+        },
+        {
+          "name": "theone_open",
+          "ui": {
+            "entrypoints": [
+              {
+                "type": "global"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

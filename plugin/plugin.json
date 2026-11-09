@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "gpt-theone",
+  "version": "0.1.0-alpha.9",
+  "description": "Persistent topic workspaces and routing for local Codex.",
+  "license": "MIT",
+  "keywords": ["topics", "context", "codex"],
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "TheOne for Codex",
+        "shortDescription": "在一个入口中继续多个独立话题",
+        "longDescription": "侧栏入口打开 Codex 原生聊天草稿，话题面板辅助创建和选择话题。保留原生输入与回复，使用本地历史检索、上下文隔离和独立 Codex 工作会话。",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": ["用 TheOne 管理这个项目的话题", "查看 TheOne 话题和未读结果"],
+        "brandColor": "#93c8f3"
+      }
+    }
+  }
+}

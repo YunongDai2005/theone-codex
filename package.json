@@ -1,0 +1,35 @@
+{
+  "name": "gpt-theone",
+  "version": "0.1.0-alpha.9",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "TheOne topic routing and persistent workspaces for local Codex",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node scripts/build-ui.mjs && tsx --test tests/*.test.ts tests/upstream/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build-ui.mjs && tsc -p tsconfig.build.json && node scripts/build-plugin.mjs",
+    "start": "node dist/main.js",
+    "check": "npm run typecheck && npm test && npm run build",
+    "doctor": "node dist/main.js doctor",
+    "client:test": "node --test client-adapter/*.test.mjs",
+    "client:build": "node client-adapter/build.mjs",
+    "client:verify": "node client-adapter/verify-runtime.mjs",
+    "client:install": "node client-adapter/install-launcher.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "1.7.5",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "esbuild": "0.28.2",
+    "playwright": "1.65.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}

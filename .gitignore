@@ -1,0 +1,15 @@
+# Generated protocol snapshots are reproducible; keep the compact evidence reports.
+/evidence/codex-*/schema/
+/evidence/codex-*/schema-experimental/
+
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+.theone/
+release/
+/ui/theone.html

@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-09T10:21:29.562Z",
+  "scope": "actual-local-user",
+  "installed": true,
+  "enabled": true,
+  "version": "0.1.0-alpha.1",
+  "installedRoot": "C:\\Users\\Administrator\\.codex\\plugins\\cache\\theone-local\\gpt-theone\\0.1.0-alpha.1",
+  "bundleSha256": "425b8a54df27f353843774a09f2c8b1cc8b7bb7f90068c8b3a6ad23b6c3838db",
+  "nativeToolCount": 30,
+  "nativeMcpCallPassed": true,
+  "skill": [
+    {
+      "name": "gpt-theone:theone",
+      "enabled": true
+    }
+  ],
+  "modelTurnStarted": false,
+  "desktopUiTested": false,
+  "hooksEnabled": false
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ctx_qwen_9070xt",
+    "title": "Qwen / RX 9070 XT",
+    "summary": "测试资料：在 RX 9070 XT 上部署 Qwen Image，正在排查推理性能。",
+    "entities": ["Qwen", "9070XT", "9070 XT", "FP8", "Q8", "TunableOp"],
+    "keywords": ["显卡", "图像模型"],
+    "lastState": "测试资料：下一步对比 TunableOp 开关与 FP8 性能。"
+  },
+  {
+    "id": "ctx_thesis",
+    "title": "Video Attention Thesis",
+    "summary": "测试资料：视频注意力模型论文，需要设计消融实验。",
+    "entities": ["论文", "thesis", "video attention"],
+    "keywords": ["消融", "视频注意力"],
+    "lastState": "测试资料：待确认消融实验分组。"
+  }
+]

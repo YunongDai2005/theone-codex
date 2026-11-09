@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TheOne</title><style>/* THEONE_STYLE */</style></head><body>
+<main>
+  <header><span class="mark" aria-hidden="true">◉</span><h1>TheOne</h1></header>
+  <section id="launcher" hidden><p>在 Codex 原有聊天中管理话题。</p><p class="muted">正在打开原生聊天草稿。你可以直接补充想做的事，再发送。</p><button id="launch" class="primary" disabled>重新打开原生聊天</button></section>
+  <section id="panel" hidden><p class="muted">选择话题后，在 Codex 原来的输入框继续。</p><div class="toolbar"><button id="new-topic" class="primary" disabled>新话题</button><button id="refresh" class="secondary">刷新</button></div><input id="filter" aria-label="搜索话题" placeholder="搜索话题…"><nav id="topics" aria-label="TheOne 话题"></nav></section>
+  <p id="status" role="status">正在连接…</p>
+</main>
+<dialog id="topic-dialog"><form id="topic-form"><div class="dialog-title"><h2>新话题</h2><button id="topic-close" type="button" class="secondary" aria-label="关闭">×</button></div><label for="topic-name">话题名称</label><input id="topic-name" required maxlength="80" autocomplete="off"><p id="topic-error" class="error" role="alert"></p><button id="topic-save" type="submit" class="primary">在原生聊天中开始</button></form></dialog>
+<script type="module">/* THEONE_SCRIPT */</script></body></html>

@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-09T10:57:06.356Z",
+  "version": "0.1.0-alpha.2",
+  "archive": "release/gpt-theone-0.1.0-alpha.2.zip",
+  "bytes": 423550,
+  "sha256": "b4afef5ae345566a1f3960d71316f25095399bcb56db79da73d7d2e53a1d7d65",
+  "nativeChatBridge": true,
+  "standaloneChatUi": false,
+  "desktopUiTested": false
+}

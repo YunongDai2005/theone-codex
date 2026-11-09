@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-09T15:08:30.223Z",
+  "mode": "cold",
+  "syntheticInput": true,
+  "selection": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "fast": false
+  },
+  "chats": 2,
+  "turns": 3,
+  "totalMs": 19735,
+  "maxInFlight": 2,
+  "calls": [
+    {
+      "method": "classify",
+      "ms": 9171,
+      "outputBytes": 408,
+      "compactReplies": 0
+    },
+    {
+      "method": "classify",
+      "ms": 13456,
+      "outputBytes": 722,
+      "compactReplies": 0
+    },
+    {
+      "method": "reconcile",
+      "ms": 6259,
+      "outputBytes": 79,
+      "compactReplies": 0
+    }
+  ],
+  "topics": 2,
+  "messages": 6,
+  "outputBytes": 1209,
+  "status": {
+    "running": false,
+    "indexed": 2,
+    "scanned": 2,
+    "failed": 0,
+    "pending": 0,
+    "excluded": 0,
+    "batches": 3,
+    "lastCompletedAt": 1794236910219,
+    "paused": false,
+    "consent": "granted",
+    "available": true,
+    "modelSettings": {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "fast": false
+    }
+  }
+}

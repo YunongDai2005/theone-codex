@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-11-09",
+  "timezone": "Asia/Shanghai",
+  "task": "DSH TheOne to native Codex desktop plugin preparation",
+  "source": {
+    "path": "D:/doc/GitHub/dsh-theone",
+    "packageName": "dsh-theone",
+    "packageVersion": "0.4.5",
+    "branch": "routing-depth",
+    "commit": "fe436d005be92541ceb82495eacf83d7230c2488",
+    "commitDate": "2026-11-04T21:43:12+08:00",
+    "localMain": "c2692be832b8a6955d4aad95eed2748892aa454a",
+    "localOriginMain": "10f196d70d69dd5e44ffe8bbdac64bc70b57f0c7",
+    "remoteRefsRefreshed": false,
+    "trackedChanges": false,
+    "untrackedContentPresent": true,
+    "license": "MIT",
+    "modulesInspectedByImportInventory": 50,
+    "implementationChanged": false
+  },
+  "target": {
+    "workspace": "D:/doc/ChatGPT/gpt-theone",
+    "initialState": "empty git repository; no commits on master",
+    "codexCliVersion": "0.167.0-alpha.3.2",
+    "codexExecutable": "C:/Users/Administrator/AppData/Local/OpenAI/Codex/bin/f71a721e0e6193a9/codex.exe",
+    "nodeVersion": "v24.21.0",
+    "protocolGenerated": true,
+    "runtimeIntegrationTested": false
+  },
+  "scope": {
+    "sourceCodeReview": true,
+    "officialDocumentationReview": true,
+    "protocolSchemaInspection": true,
+    "liveModelCalls": false,
+    "conversationsRead": false,
+    "liveThreadsCreated": false,
+    "pluginInstalled": false,
+    "globalConfigChanged": false,
+    "originalTestSuiteRun": false,
+    "portImplemented": false,
+    "committed": false,
+    "pushed": false
+  },
+  "warnings": [
+    "Codex CLI emitted access warnings for user-level temporary PATH alias cleanup; schema export completed with exit code 0.",
+    "Package version is local source metadata, not a verified npm release or installed DSH runtime version.",
+    "Schema presence is not evidence of runtime access, native UI rendering, or plugin authorization."
+  ]
+}

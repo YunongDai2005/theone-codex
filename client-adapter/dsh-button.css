@@ -1,0 +1,24 @@
+/* Copied from dsh-theone src/client.ts (MIT). Host variable mapping is separate. */
+button:has(.theone-nav){--one-accent:#a75b1e;--one-tint:#fff5ec;--one-line:#eed3bb;--one-heat:#ff78002b;--one-glow:0 0 22px 4px #ff6b0024,0 4px 32px 6px #ff76000d;border:1px solid var(--one-line);background:var(--one-tint);box-shadow:var(--one-glow);overflow:visible;border-radius:12px;color:var(--dsw-alias-label-primary);flex:none;position:relative;isolation:isolate}
+[data-ds-dark-theme] button:has(.theone-nav){--one-accent:#93c8f3;--one-tint:#1d2a37;--one-line:#344d64;--one-heat:#80caff30;--one-glow:0 0 22px 4px #80bae924}
+button:has(.theone-nav)::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(85px circle at var(--one-pointer-x,50%) var(--one-pointer-y,50%),var(--one-heat),transparent 100%);opacity:0;transition:opacity 180ms ease;z-index:0}
+button[data-one-tracking=true]:has(.theone-nav[data-active=true])::after{opacity:1}
+@media(prefers-reduced-motion:reduce){button:has(.theone-nav)::after{transition:none}}
+button:has(.theone-nav[data-wide=true]){padding:12px 10px;min-height:64px;margin-top:4px;margin-bottom:18px}
+button:has(.theone-nav[data-wide=true])>span:not(:has(.theone-nav)){display:none}
+button:has(.theone-nav):hover{background:var(--one-tint);border-color:color-mix(in srgb,var(--one-accent) 40%,var(--one-line))}
+button:has(.theone-nav[data-active=true]){border-color:color-mix(in srgb,var(--one-accent) 40%,var(--one-line))}
+.theone-nav{display:flex;align-items:center;gap:10px;color:var(--one-accent);font-family:inherit;position:relative;z-index:1}
+.theone-symbol-wrap{position:relative;display:inline-flex;flex:none;width:20px;height:20px}
+.theone-nav .theone-symbol{display:block;width:20px;height:20px;flex:none;overflow:visible;border:0;border-radius:0;background:none;position:relative}
+.theone-symbol[data-spooky=true]{color:#d9600c}.theone-symbol-stem{stroke:#5f7a2e}
+[data-ds-dark-theme] .theone-symbol[data-spooky=true]{color:#f39a4a}[data-ds-dark-theme] .theone-symbol-stem{stroke:#8fae55}
+.theone-nav[data-wide=true] .theone-symbol-wrap{margin:0 2px}
+.theone-entry-copy{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.theone-entry-title{display:flex;align-items:center;gap:9px;line-height:22px}
+.theone-wordmark{display:inline-flex;align-items:baseline;gap:1px;white-space:nowrap}
+.theone-word-the{font-size:12px;font-weight:400;letter-spacing:-.25px;color:var(--dsw-alias-label-secondary)}
+.theone-word-one{position:relative;font-family:ui-rounded,'SF Pro Rounded','Avenir Next',sans-serif;font-size:19px;line-height:1.15;font-weight:500;letter-spacing:-1px;transform:rotate(-4deg);padding-right:7px}
+.theone-word-dot{position:absolute;right:0;top:2px;width:4px;height:4px;border-radius:50%;corner-shape:round;background:currentColor}
+.theone-entry-label{font-size:12px;font-weight:400;white-space:nowrap}
+.theone-entry-sub{font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}

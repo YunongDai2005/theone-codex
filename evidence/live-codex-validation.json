@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-09T10:05:52.745Z",
+  "liveCodex": true,
+  "syntheticDataOnly": true,
+  "sandbox": "read-only",
+  "passed": true,
+  "threads": {
+    "a": "01a1bfc5-048d-72d3-a7ab-e6c60d71782e",
+    "b": "01a1bfc5-33ee-7391-8358-c8da705ec57a"
+  },
+  "turns": [
+    "01a1bfc5-0872-7922-b284-819318a79d04",
+    "01a1bfc5-3ce4-7dd0-8f23-815f274162db",
+    "01a1bfc5-6205-7ae3-8650-d18525821898"
+  ],
+  "separateThreads": true,
+  "resumedSameThread": true,
+  "correctTopicRecall": true,
+  "resumedAfterProcessRestart": true
+}
