@@ -1,0 +1,130 @@
+{
+  "measuredAt": "2026-11-09T16:13:34.010Z",
+  "settings": {
+    "preference": "Luna",
+    "effort": "low",
+    "fast": false
+  },
+  "timeoutMs": 15000,
+  "count": 8,
+  "succeeded": 8,
+  "percentiles": {
+    "method": "nearest-rank, all attempts including failures; milliseconds",
+    "p50": 4877,
+    "p90": 7743
+  },
+  "runs": [
+    {
+      "name": "continuation",
+      "connection": "cold",
+      "ok": true,
+      "elapsedMs": 6134,
+      "routerElapsedMs": 6134,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "近期正准备修改第一章开头。"
+      }
+    },
+    {
+      "name": "named-topic",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4599,
+      "routerElapsedMs": 4599,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "SWAP",
+        "contextId": "camp",
+        "reason": "明确回到周末露营计划并补充雨天方案。"
+      }
+    },
+    {
+      "name": "new-task",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4833,
+      "routerElapsedMs": 4833,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "吉他入门练习计划",
+        "label": "吉他",
+        "reason": "这是一个目标明确的新学习计划，与现有话题无关。",
+        "historyIndependent": true
+      }
+    },
+    {
+      "name": "code-followup",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 5837,
+      "routerElapsedMs": 5837,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "router",
+        "reason": "询问 TheOne proposal 的冲突测试分支，属于路由开发话题。"
+      }
+    },
+    {
+      "name": "missing-history",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 5116,
+      "routerElapsedMs": 5116,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CLARIFY",
+        "question": "你指的是哪个方案或话题？请提供之前的链接。",
+        "reason": "明确依赖缺失的昨天方案和之前链接。"
+      }
+    },
+    {
+      "name": "aside",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 7743,
+      "routerElapsedMs": 7742,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "英寸厘米换算",
+        "label": "换算",
+        "reason": "独立的一次性单位换算，与现有话题无关。",
+        "aside": true,
+        "historyIndependent": true
+      }
+    },
+    {
+      "name": "multiple-topics",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4877,
+      "routerElapsedMs": 4876,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "修改书稿户外场景，露营经历作为参考。",
+        "relatedIds": [
+          "camp"
+        ]
+      }
+    },
+    {
+      "name": "negated-switch",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4748,
+      "routerElapsedMs": 4749,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "明确继续修改书稿第一章。"
+      }
+    }
+  ]
+}

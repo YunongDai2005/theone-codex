@@ -1,0 +1,130 @@
+{
+  "measuredAt": "2026-11-09T16:14:23.363Z",
+  "settings": {
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "fast": true
+  },
+  "timeoutMs": 15000,
+  "count": 8,
+  "succeeded": 8,
+  "percentiles": {
+    "method": "nearest-rank, all attempts including failures; milliseconds",
+    "p50": 4220,
+    "p90": 6952
+  },
+  "runs": [
+    {
+      "name": "continuation",
+      "connection": "cold",
+      "ok": true,
+      "elapsedMs": 5514,
+      "routerElapsedMs": 5513,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "近期对话明确将修改第一章开头，继续承接书稿话题。"
+      }
+    },
+    {
+      "name": "named-topic",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 5781,
+      "routerElapsedMs": 5781,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "SWAP",
+        "contextId": "camp",
+        "reason": "明确回到周末露营计划并补充雨天方案。"
+      }
+    },
+    {
+      "name": "new-task",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4039,
+      "routerElapsedMs": 4039,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "吉他入门练习计划",
+        "label": "吉他练习",
+        "reason": "提出独立的新学习计划，信息足以开始制定。",
+        "historyIndependent": true
+      }
+    },
+    {
+      "name": "code-followup",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 3701,
+      "routerElapsedMs": 3702,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "router",
+        "reason": "询问 TheOne proposal 冲突测试，承接路由开发话题。"
+      }
+    },
+    {
+      "name": "missing-history",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 6952,
+      "routerElapsedMs": 6952,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CLARIFY",
+        "question": "你指的是哪个方案？请提供相关话题或链接。",
+        "reason": "明确引用昨天的方案和之前的链接，但历史索引中没有足够信息定位。"
+      }
+    },
+    {
+      "name": "aside",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4220,
+      "routerElapsedMs": 4220,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "英寸与厘米换算",
+        "label": "单位换算",
+        "reason": "独立的一次性换算问题，与现有话题无关。",
+        "aside": true,
+        "historyIndependent": true
+      }
+    },
+    {
+      "name": "multiple-topics",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4167,
+      "routerElapsedMs": 4167,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "主要修改书稿场景，并参考露营经历。",
+        "relatedIds": [
+          "camp"
+        ]
+      }
+    },
+    {
+      "name": "negated-switch",
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "elapsedMs": 4815,
+      "routerElapsedMs": 4816,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "明确继续书稿第一章；露营仅为排除项。"
+      }
+    }
+  ]
+}
