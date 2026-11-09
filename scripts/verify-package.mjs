@@ -13,10 +13,10 @@ await mkdir(codexHome, { recursive: true })
 const env = { ...process.env, CODEX_HOME: codexHome, THEONE_DATA_DIR: dataDir }
 const cli = (args) => execFileSync(findCodex(), args, { env, encoding: 'utf8', windowsHide: true, timeout: 30000 })
 cli(['plugin', 'marketplace', 'add', resolve('release')])
-const installation = JSON.parse(cli(['plugin', 'add', 'gpt-theone@theone-local', '--json']))
-const listing = JSON.parse(cli(['plugin', 'list', '--marketplace', 'theone-local', '--json']))
+const installation = JSON.parse(cli(['plugin', 'add', 'theone@theone-codex', '--json']))
+const listing = JSON.parse(cli(['plugin', 'list', '--marketplace', 'theone-codex', '--json']))
 const client = new Client({ name: 'package-test', version: '1' })
-const transport = new StdioClientTransport({ command: process.execPath, args: [resolve('release/gpt-theone/server/main.mjs')], env, stderr: 'pipe' })
+const transport = new StdioClientTransport({ command: process.execPath, args: [resolve('release/theone/server/main.mjs')], env, stderr: 'pipe' })
 await client.connect(transport)
 let toolCount
 try {

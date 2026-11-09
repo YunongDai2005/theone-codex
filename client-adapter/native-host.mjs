@@ -1,4 +1,4 @@
-export const PLUGIN_MENTION = '[@TheOne](plugin://gpt-theone@theone-local) '
+export const PLUGIN_MENTION = '[@TheOne](plugin://theone@theone-codex) '
 
 export function createNativeHost({ scope, modules, preview, startDraft }) {
   const ids = modules('DBCl'), binding = modules('V3rO'), keys = modules('d6Ff'), sidebar = modules('RFDv')

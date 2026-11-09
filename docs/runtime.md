@@ -6,7 +6,7 @@
 
 `node dist/main.js serve` 启动 stdio MCP；`node dist/main.js doctor` 只初始化本机 Codex 并读取一个模型目录条目；`node dist/main.js hook` 从 stdin 读取 hook JSON。
 
-数据目录按 `THEONE_DATA_DIR` → `PLUGIN_DATA/theone` → 用户目录 `.gpt-theone` 选择。分别保存 `topics.db`、`runtime.db`、`tasks.db`，使用 SQLite WAL。备份应停止服务器后复制全部数据库，或用 SQLite 一致性备份；JSON 导出只覆盖话题/消息，不是执行状态、任务、学习记录和合并日志的完整灾备。工具不会直接修改 Codex 私有数据库。
+数据目录按 `THEONE_DATA_DIR` → `PLUGIN_DATA/theone` → 用户目录 `.gpt-theone` 选择。分别保存 `topics.db`、`runtime.db`、`tasks.db`，使用 SQLite WAL。Windows 安装器迁移 `gpt-theone@theone-local` 到 `theone@theone-codex` 时，把原数据路径固定为新 MCP 的 `THEONE_DATA_DIR`，保持原位，不因插件改名使用新的空目录。多个候选目录会要求显式指定路径；卸载默认保留数据。安装流程见 [INSTALL.md](../INSTALL.md)。备份应停止服务器后复制全部数据库，或用 SQLite 一致性备份；JSON 导出只覆盖话题/消息，不是执行状态、任务、学习记录和合并日志的完整灾备。工具不会直接修改 Codex 私有数据库。
 
 `THEONE_CODEX_BIN` 可以指定 Codex 可执行文件。Windows 自动寻找 `%LOCALAPPDATA%/OpenAI/Codex/bin/*/codex.exe`，否则使用 PATH 中的 `codex`。工作进程通过 stdio App Server 使用现有 Codex 登录；插件不读取或保存其账户令牌。
 
@@ -115,6 +115,6 @@ hook 只在主模型遵循工具流程时形成闭环，不能证明主聊天已
 
 `theone_answer_suggestion({suggestionId,response,direction?})` 的 response 为 accept/decline/later；accept 进入同一排队合并流程，重复接受沿用已选方向，decline 持久抑制，later 保留待定。接受后编辑任一话题会使排队请求失效。模型内部理由不进入气泡/用户选择记录。
 
-启动服务和打开设置时检查固定公开 GitHub API `YunongDai2005/theone-codex/releases/latest`，不带 token、不读取账户凭据、不跟随重定向，5 秒超时，缓存 6 小时。`theone_check_updates({force:true})` 可手动刷新。只有较新且有效的 release 显示版本、官方 release 链接和手动命令；网络/限流/解析失败静默。命令按本机 CLI 实际帮助提供 `codex plugin marketplace upgrade theone-codex` 与 `codex plugin add theone@theone-codex`；没有自动执行、下载或安装。
+启动服务和打开设置时检查固定公开 GitHub API `YunongDai2005/theone-codex/releases/latest`，不带 token、不读取账户凭据、不跟随重定向，5 秒超时，缓存 6 小时。`theone_check_updates({force:true})` 可手动刷新。只有较新且有效的 release 显示版本、官方 release 链接和手动更新说明；网络/限流/解析失败静默。公开版基准为 `0.1.0`，更新提示为下载新 Windows 包并重新运行安装程序，macOS/Linux 按 INSTALL.md 重新构建安装；没有自动执行、下载或安装。
 
 原生会话拖入暂不支持：当前侧栏没有上游手势要求的 session 行身份，宿主桥无法可靠定位被拖入的 threadId。微信/Telegram/iMessage 桥及 DSH 工具卡片镜像不在本次实现范围。

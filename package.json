@@ -1,10 +1,10 @@
 {
-  "name": "gpt-theone",
-  "version": "0.1.0-alpha.9",
+  "name": "theone-codex",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "license": "MIT",
-  "description": "TheOne topic routing and persistent workspaces for local Codex",
+  "description": "One main chat routes each message to its topic-specific Codex session.",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -13,12 +13,15 @@
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build-ui.mjs && tsc -p tsconfig.build.json && node scripts/build-plugin.mjs",
     "start": "node dist/main.js",
-    "check": "npm run typecheck && npm test && npm run build",
+    "check": "npm run typecheck && npm test && npm run installer:test && npm run build",
     "doctor": "node dist/main.js doctor",
     "client:test": "node --test client-adapter/*.test.mjs",
     "client:build": "node client-adapter/build.mjs",
     "client:verify": "node client-adapter/verify-runtime.mjs",
-    "client:install": "node client-adapter/install-launcher.mjs"
+    "client:install": "node client-adapter/install-launcher.mjs",
+    "installer:test": "node --test installer/*.test.mjs",
+    "package:test": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package.test.ps1",
+    "client:payload": "node scripts/build-client-payload.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "1.7.5",
