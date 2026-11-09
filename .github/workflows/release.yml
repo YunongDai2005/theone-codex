@@ -40,5 +40,8 @@ jobs:
             gh release create $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY --verify-tag --title "TheOne for Codex $version" --generate-notes
             if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
           }
-          gh release upload $env:GITHUB_REF_NAME $zip "$zip.sha256" --repo $env:GITHUB_REPOSITORY --clobber
+          # A zip already attached was verified by a real install; do not replace it with an untested build.
+          $assets = gh release view $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name"
+          if ($assets -contains (Split-Path $zip -Leaf)) { Write-Host "Release already has a verified zip; keeping it."; exit 0 }
+          gh release upload $env:GITHUB_REF_NAME $zip "$zip.sha256" --repo $env:GITHUB_REPOSITORY
           if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }

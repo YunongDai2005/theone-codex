@@ -12,6 +12,8 @@
 
 <p align="center"><img src="./docs/images/topic-cells.png" alt="Codex 侧边栏「新聊天」下面是 TheOne 主聊天卡片，卡片下是话题细胞，当前话题「旅行安排」亮着" width="380"></p>
 
+<p align="center"><b>安装：</b>Windows 下载 <a href="https://github.com/YunongDai2005/theone-codex/releases/latest">Releases</a> 里的 zip，解压后双击「安装 TheOne」；或者在 Codex 里说「帮我安装 https://github.com/YunongDai2005/theone-codex」。</p>
+
 <p align="center"><b>QQ 交流群：1080980184</b>：装不上、分错了、想要什么功能，进群说一声。</p>
 
 ---
@@ -36,13 +38,15 @@ TheOne 原本是 [DeepSeek Harness（DSH）](https://github.com/YunongDai2005/ds
 4. **路由模型**：用你的 Codex 登录调一次模型判断，判断不稳时再复核一次。路由提示词、校验和复核规则与 DSH 版相同。
 5. **本地规则**：模型调用失败时兜底。
 
-路由模型默认用 GPT-6 Luna、低思考强度，可以在设置里换。实测见 [路由延迟记录](evidence/router-latency-luna-low.json)。
+路由模型默认用 GPT-6 Luna、低思考强度，可以在设置里换。实测（8 条样例消息）：主模型 3 秒后交任务时，用户多等的中位数是 1.5 秒；5 秒后交任务时是 0。见 [预路由测量](evidence/preroute-latency.json) 和 [各模型延迟](evidence/router-latency-luna-low.json)。
 
 ## 功能
 
 - **每件事一个独立的 Codex 会话**：上下文互不干扰；同一个项目的话题按顺序排队，不会同时改同一批文件。
 - **话题细胞**：「新聊天」下面是主聊天卡片，卡片下的细胞就是你的话题。正在干活、等你回答、刚回答完的细胞会显示名字；其余的鼠标靠近才显示。拖一个细胞到另一个上就是合并，把消息拖到别的细胞上就是改派。
-- **分错了能改**：改派只修正归属，不会悄悄撤销已经做过的改动。疑似重复的话题会用虚线连起来，由你决定要不要合并。
+- **分错了能改**：「最近的话题分配」里列着每条消息去了哪里，可能放错的旁边有「换到 …」，改过的可以「撤销」。改派只修正归属，不会悄悄撤销已经做过的改动。疑似重复的话题会用虚线连起来，由你决定要不要合并。
+- **动手前核对对象**：话题为一条消息第一次改文件、跑命令之前，如果这条消息也可能属于别的话题，或者要改的东西不在这个话题的文件夹里，会先在主聊天问你一次；有把握就直接做。
+- **它干活时你可以接着说**：回答进行中补充的话并进这次回答；别的事交给它自己的话题，最多三个话题同时干活。隔了三天以上回到一个话题，它会先说「上次记录是……」。
 - **一次性插问**：「1 英寸是多少厘米」这类顺口一问，回答完自动收起，主聊天回到原来的话题。
 - **有出处的事实记录**：定下来的数值和决定会记下来源和版本；被引用的事实变了，相关话题会收到通知。
 - **整理以前的聊天**：经你同意后，用你选的模型读一遍选中的旧会话，整理成话题细胞。只读不改，原会话原样保留。
@@ -51,31 +55,25 @@ TheOne 原本是 [DeepSeek Harness（DSH）](https://github.com/YunongDai2005/ds
 
 ## 安装
 
-需要 Codex（桌面版或 CLI）和 Node.js 24 以上。
+**Windows（推荐）：**
 
-**只装插件（桌面版和 CLI 都能用）：**
+1. 在 [Releases](https://github.com/YunongDai2005/theone-codex/releases/latest) 下载 `TheOne-for-Codex-<版本>-windows.zip`，完整解压到一个文件夹。
+2. 双击 **安装 TheOne.cmd**。包里自带 Node，不用另装。
+3. 完全退出 Codex，从桌面的 **Codex TheOne** 快捷方式启动，「新聊天」下面就是主聊天卡片。
+
+安装程序会注册插件，并在本机复制一份 Codex 桌面版打上界面补丁，原版安装和快捷方式保留不动。界面补丁针对 Codex 桌面版 `26.1103.4239.0`；版本对不上时只装插件，入口在「探索 / 更多」里，项目聊天里也可以用 `$theone`。装过旧版的会自动迁移，话题数据原样保留。卸载双击 **卸载 TheOne.cmd**，话题数据默认保留。
+
+**让 Codex 帮你装：** 在 Codex 里说一句「帮我安装 https://github.com/YunongDai2005/theone-codex」。它会照 [INSTALL.md](INSTALL.md) 的步骤下载、校验并运行安装程序，改你的 Codex 配置之前会先问你。
+
+**macOS / Linux（只装插件）：** 需要 Node.js 24 以上。
 
 ```bash
-codex plugin marketplace add YunongDai2005/theone-codex --ref marketplace
+git clone https://github.com/YunongDai2005/theone-codex.git && cd theone-codex && npm ci --ignore-scripts && npm run build
 ```
 
 ```bash
-codex plugin add theone@theone-codex
+codex plugin marketplace add "$PWD/release" && codex plugin add theone@theone-codex
 ```
-
-装好后重启 Codex。桌面版的 TheOne 入口在「探索 / 更多」里，固定后进入侧边栏；项目聊天里也可以用 `$theone`。
-
-**完整界面（Windows 桌面版）：** 想要「新聊天」下面的主聊天卡片和话题细胞，还需要装客户端适配。它会在本机复制一份 Codex 桌面版再打补丁，原版安装和快捷方式保留不动：
-
-```bash
-git clone https://github.com/YunongDai2005/theone-codex.git
-```
-
-```bash
-cd theone-codex && npm ci --ignore-scripts && npm run build && npm run client:install
-```
-
-之后从桌面的 **Codex TheOne** 快捷方式启动。客户端适配针对 Codex 桌面版 `26.1103.4239.0`，原版升级后需要重新运行 `npm run client:install`。详见 [客户端适配](docs/client-adapter.md)。
 
 ## 和 DSH 版的区别
 
@@ -93,13 +91,15 @@ cd theone-codex && npm ci --ignore-scripts && npm run build && npm run client:in
 
 **会多花额度吗？** 主模型有把握时不额外调用。需要路由模型时，每条消息多一次低思考强度的调用；整理旧聊天按你选的模型计费。
 
-**客户端适配安全吗？** 它只改本机复制出来的那一份 Codex 桌面版，不改原版安装，也不改你的聊天数据。不想用可以只装插件。
+**界面补丁安全吗？** 它只改本机复制出来的那一份 Codex 桌面版，不改原版安装，也不改你的聊天数据。Codex 升级后重新运行一次安装程序即可。
+
+**怎么反馈问题？** 设置底部有「反馈」，会整理好版本和路由诊断（不含聊天内容）供你复制，再到 [Issues](https://github.com/YunongDai2005/theone-codex/issues) 提交或发邮件；也可以进 QQ 群 1080980184。
 
 **这是 OpenAI 官方的吗？** 不是。TheOne 是独立的开源项目，与 OpenAI 无关。
 
 ## 验证
 
-`npm run check`：类型检查、全部单元测试和构建。客户端适配另有 `npm run client:test`。每次发版的测试结果写在 [Releases](https://github.com/YunongDai2005/theone-codex/releases) 里。
+0.1.0 发版前通过：`npm run check`（类型检查、231 项单元测试、构建），`npm run client:test`（42 项），安装程序 16 项和打包检查。Windows 安装包在隔离的 Codex 配置里完整跑过安装和卸载：插件注册并启用、客户端补丁生成、MCP 服务启动、卸载后数据保留。
 
 ## 来源和许可
 
