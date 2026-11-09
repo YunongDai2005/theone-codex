@@ -23,7 +23,9 @@ jobs:
           }
       - run: npm ci
       - run: npm run check
-      - run: npm run package:test
+      - name: Package tests in a clean Windows PowerShell
+        shell: cmd
+        run: npm run package:test
       - run: npm run client:payload
       - name: Package plugin, installer and verified portable Node
         shell: pwsh

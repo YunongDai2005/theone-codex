@@ -2,12 +2,20 @@
 $ErrorActionPreference = 'Stop'
 $PinnedNodeVersion = '24.21.0'
 
+# .NET instead of Get-FileHash: Windows PowerShell started from PowerShell 7 (as on CI) may not load its Utility module.
+function Get-Sha256 {
+  param([string]$Path)
+  $stream = [IO.File]::OpenRead($Path)
+  try { $sha = [Security.Cryptography.SHA256]::Create(); try { return -join ($sha.ComputeHash($stream) | ForEach-Object { $_.ToString('x2') }) } finally { $sha.Dispose() } }
+  finally { $stream.Dispose() }
+}
+
 function Test-NodeChecksum {
   param([string]$Archive, [string]$Shasums, [string]$FileName)
   $checksumLines = @(Get-Content -LiteralPath $Shasums -Encoding UTF8 | Where-Object { $_ -match ('^[a-fA-F0-9]{64}\s+\*?' + [regex]::Escape($FileName) + '$') })
   if ($checksumLines.Count -ne 1) { throw "Expected exactly one official SHA256 entry for $FileName" }
   $expected = ($checksumLines[0] -split '\s+')[0]
-  $actual = (Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash
+  $actual = (Get-Sha256 -Path $Archive)
   if ($actual -ne $expected) { throw "Node SHA256 mismatch for $FileName; remove the cached archive and download again." }
 }
 function Remove-PackageStage {
@@ -68,7 +76,7 @@ function New-TheOneWindowsArchive {
     } finally { $archive.Dispose() }
     if (Test-Path -LiteralPath $archivePath) { Remove-Item -LiteralPath $archivePath }
     Move-Item -LiteralPath $temporaryZip -Destination $archivePath
-    $hash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $hash = (Get-Sha256 -Path $archivePath)
     [IO.File]::WriteAllText(($archivePath + '.sha256'), "$hash  $([IO.Path]::GetFileName($archivePath))`n", [Text.UTF8Encoding]::new($false))
     return $archivePath
   } finally {

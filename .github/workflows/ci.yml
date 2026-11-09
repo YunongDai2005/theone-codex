@@ -17,7 +17,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm run package:test
+      - name: Package tests in a clean Windows PowerShell
+        shell: cmd
+        run: npm run package:test
       - run: npm run client:payload
       - name: Build the Windows zip (not uploaded)
         shell: pwsh

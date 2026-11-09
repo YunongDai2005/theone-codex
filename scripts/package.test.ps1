@@ -6,7 +6,7 @@ $null = New-Item -ItemType Directory -Path $testRoot
 try {
   $archive = Join-Path $testRoot 'node-v24.21.0-win-x64.zip'
   [IO.File]::WriteAllText($archive, 'fixture, not a real Node distribution')
-  $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+  $hash = (Get-Sha256 -Path $archive)
   $checksums = Join-Path $testRoot 'SHASUMS256.txt'
   [IO.File]::WriteAllText($checksums, "$hash  node-v24.21.0-win-x64.zip`n")
   Test-NodeChecksum -Archive $archive -Shasums $checksums -FileName 'node-v24.21.0-win-x64.zip'
