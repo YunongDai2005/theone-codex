@@ -71,25 +71,30 @@ export class RuntimeStore {
     catch (e) { this.db.exec('ROLLBACK'); throw e }
   }
   lock(resources: string[], runId: string): boolean {
+    return this.acquire(resources, runId) === 'acquired'
+  }
+  lockExecution(resources: string[], runId: string) { return this.acquire(resources, runId, 3) }
+  private acquire(resources: string[], runId: string, capacity?: number): 'acquired' | 'busy' | 'capacity' {
     return this.transaction(() => {
       const normalize = (value: string) => {
         const path = value.slice('workspace:'.length).replace(/\\/g, '/').replace(/\/$/, '')
         return process.platform === 'win32' ? path.toLowerCase() : path
       }
       const held = this.db.prepare('SELECT resource,run_id FROM execution_locks').all()
+      if (capacity && new Set(held.filter(row => row.run_id !== runId).map(row => row.run_id)).size >= capacity) return 'capacity'
       for (const resource of resources) {
         for (const row of held) {
           if (row.run_id === runId) continue
           const other = String(row.resource)
-          if (resource === other) return false
+          if (resource === other) return 'busy'
           if (resource.startsWith('workspace:') && other.startsWith('workspace:')) {
             const a = normalize(resource), b = normalize(other)
-            if (a === b || a.startsWith(b + '/') || b.startsWith(a + '/')) return false
+            if (a === b || a.startsWith(b + '/') || b.startsWith(a + '/')) return 'busy'
           }
         }
       }
       for (const resource of resources) this.db.prepare('INSERT OR IGNORE INTO execution_locks VALUES (?,?)').run(resource, runId)
-      return true
+      return 'acquired'
     })
   }
   unlock(runId: string): void { this.db.prepare('DELETE FROM execution_locks WHERE run_id=?').run(runId) }

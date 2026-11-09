@@ -4,10 +4,11 @@ import { createFoam, foamCss } from './upstream/client-foam.ts'
 import { zh, en } from './upstream/client-locales.ts'
 import { foamModel, foamChanges, foamActions, mergeOutcomes, settleFoamEvents } from './foam-adapter.mjs'
 import { ModelPicker, modelSelectionValid } from './model-picker.mjs'
+import { RoutePanel, FeedbackPanel } from './route-panels.mjs'
 
 const statusText = { queued: '排队中', starting: '正在开始', running: '进行中', waiting_approval: '等待确认', completed: '已完成', failed: '未完成', interrupted: '已中断', cancelled: '已取消' }
 
-export function useDesktop({ React, scope, modules, preview, startDraft, css }) {
+export function useDesktop({ React, scope, modules, preview, startDraft, css, adapterVersion }) {
   const h = React.createElement
   const candidate = createNativeHost({ scope, modules, preview, startDraft })
   const host = React.useMemo(() => candidate, [scope, candidate.profileId])
@@ -17,6 +18,7 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
   const [panel, setPanel] = React.useState(null), [query, setQuery] = React.useState(''), [name, setName] = React.useState('')
   const [editing, setEditing] = React.useState(null), [pending, setPending] = React.useState(false)
   const [historyQuery, setHistoryQuery] = React.useState('')
+  const [feedbackDescription, setFeedbackDescription] = React.useState(''), [copied, setCopied] = React.useState(false)
   const dialog = React.useRef(null), openPanel = value => { setPanel(value); void controller.action(() => controller.refresh()) }
   const foamElement = React.useRef(null), openManager = React.useRef(null)
   openManager.current = () => openPanel('topics')
@@ -80,6 +82,7 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
   }, [controller, state.historyPrompt])
   React.useEffect(() => { if (panel === 'history') { void controller.historySessions(); void controller.historyModels() } }, [controller, panel])
   React.useEffect(() => { if (panel === 'settings') { void controller.routerModels(); void controller.checkUpdates() } }, [controller, panel])
+  React.useEffect(() => { if (panel === 'routes') { void controller.recentRoutes(); const timer = setInterval(() => void controller.recentRoutes(), 5000); return () => clearInterval(timer) } }, [controller, panel])
   React.useEffect(() => {
     if (panel && !dialog.current.open) dialog.current.showModal()
     else if (!panel && dialog.current.open) dialog.current.close()
@@ -99,7 +102,9 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
   const modelDisabled = pending || history?.running
   const included = historyChoices?.sessions.filter(s => !s.excluded).length ?? 0
   const historyTitle = history?.consent === 'granted' ? '整理历史' : '整理以前的聊天'
-  const title = panel === 'history' ? historyTitle : panel === 'settings' ? 'TheOne 设置' : '管理话题'
+  const title = panel === 'history' ? historyTitle : panel === 'settings' ? 'TheOne 设置' : panel === 'routes' ? '最近的话题分配' : panel === 'feedback' ? '反馈问题' : panel === 'menu' ? 'TheOne' : '管理话题'
+  const feedback = inputId => { setFeedbackDescription(''); setCopied(false); openPanel('feedback'); void controller.feedbackDiagnostics(inputId) }
+  const navigation = () => h('div', { className: 'theone-panel-navigation' }, entry('管理话题', () => openPanel('topics')), history?.available && entry('整理历史', () => openPanel('history')), entry('最近的话题分配', () => openPanel('routes')), entry('设置', () => openPanel('settings')))
   const historyAction = async () => perform(async () => {
     if (history?.consent === 'granted') await controller.historyRefresh()
     else await controller.historyConsent(true)
@@ -141,13 +146,20 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
     h('div', { ref: foamElement, className: 'theone-codex-foam', 'data-theone-cells': true }),
     h('div', { className: 'theone-native-tools', 'data-theone-controls': true, 'data-empty': !state.topics.length },
       !state.topics.length && entry('管理话题', () => openPanel('topics'), { 'aria-label': 'TheOne 管理话题', className: 'theone-space-entry' }),
+      entry('分配', () => openPanel('routes'), { 'aria-label': '最近的话题分配', title: '最近的话题分配', className: 'theone-routes-entry' }),
       entry('⚙', () => openPanel('settings'), { 'aria-label': 'TheOne 设置', title: 'TheOne 设置', className: 'theone-settings-entry' })),
     (history?.running || history?.paused || history?.failed > 0) && h('button', { type: 'button', className: 'theone-history-status', onClick: () => openPanel('history') },
       history.running ? `整理历史中 · ${history.indexed} 个完成` : history.paused ? '历史整理已暂停' : '历史整理需要重试'),
     state.error && h('div', { className: 'theone-native-error', role: 'status' }, 'TheOne：', state.error, entry('重试', () => controller.action(() => controller.refresh()))),
     h('dialog', { ref: dialog, className: 'theone-native-dialog', 'aria-label': title, onCancel: () => setPanel(null), onClose: () => setPanel(null), onClick: event => { if (event.target === dialog.current) { const r = dialog.current.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) setPanel(null) } } },
       h('header', null, h('h2', null, title), entry('×', () => setPanel(null), { 'aria-label': '关闭' })),
-      panel === 'history' ? historyPanel : panel === 'settings' ? h('div', { className: 'theone-native-settings' },
+      panel === 'menu' ? navigation() : panel === 'routes' ? h(RoutePanel, { React, routes: state.routes, stats: state.routeStats, topics: state.topics, busy: pending,
+        move: (inputId, topicId, undo) => perform(() => controller.correctRoute(inputId, topicId, undo)), report: feedback, error: state.routesError, retry: () => controller.recentRoutes() })
+      : panel === 'feedback' ? h(FeedbackPanel, { React, description: feedbackDescription, change: value => { setFeedbackDescription(value); setCopied(false) },
+        diagnostics: state.diagnostics, adapterVersion, loading: state.diagnosticsLoading, error: state.diagnosticsError, copied, copying: pending,
+        copy: report => perform(() => controller.action(async () => { await navigator.clipboard.writeText(report); setCopied(true) })) })
+      : panel === 'history' ? historyPanel : panel === 'settings' ? h('div', { className: 'theone-native-settings' },
+        navigation(),
         history?.available && h('div', { className: 'theone-history-settings' }, entry('整理历史', () => openPanel('history')), h('span', { className: 'theone-muted' }, '把旧聊天整理成话题气泡')),
         h('section', { className: 'theone-history' },
           h(ModelPicker, { React, label: '路由模型', options: state.routerModelOptions, selection: state.routerModelSelection, select: change => controller.routerSelectModel(change),
@@ -161,7 +173,7 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
         h('label', null, '启用 TheOne', h('input', { type: 'checkbox', disabled: !state.gateway || pending, checked: state.gateway?.enabled ?? true, onChange: event => perform(() => controller.settings({ enabled: event.target.checked })) })),
         h('label', null, '工作权限', h('select', { disabled: !state.gateway || pending, value: state.gateway?.sandbox ?? 'read-only', onChange: event => perform(() => controller.settings({ sandbox: event.target.value })) }, h('option', { value: 'read-only' }, '只读'), h('option', { value: 'workspace-write' }, '允许修改当前项目'))),
         h('label', null, '话题间共享', h('select', { disabled: !state.gateway || pending, value: state.gateway?.linkScope ?? 'auto', onChange: event => perform(() => controller.settings({ linkScope: event.target.value })) }, h('option', { value: 'auto' }, '自动关联'), h('option', { value: 'workspace' }, '同一项目'), h('option', { value: 'off' }, '关闭'))),
-        h('p', { className: 'theone-muted' }, '私密话题不会向其他话题分享内容。')) : h(React.Fragment, null,
+        h('p', { className: 'theone-muted' }, '私密话题不会向其他话题分享内容。'), entry('反馈', () => feedback())) : h(React.Fragment, null,
         h('div', { className: 'theone-native-toolbar' }, h('input', { type: 'search', placeholder: '搜索话题', 'aria-label': '搜索话题', value: query, onChange: event => setQuery(event.target.value) }), entry('自动分话题', () => choose(null)), history?.available && entry('整理历史', () => openPanel('history')), entry('刷新', () => controller.action(() => controller.refresh()))),
         h('form', { className: 'theone-native-new', onSubmit: event => { event.preventDefault(); if (!name.trim()) return; void perform(async () => { if (editing) await controller.manageTopic(editing, { title: name.trim() }); else await controller.createTopic(name.trim()); if (!controller.getSnapshot().error) { setName(''); setEditing(null); if (!editing) setPanel(null) } }) } },
           h('input', { 'aria-label': editing ? '话题新名称' : '新话题名称', placeholder: editing ? '修改话题名称' : '开始一件新事情…', value: name, maxLength: 80, onChange: event => setName(event.target.value) }),
@@ -179,6 +191,6 @@ export function useDesktop({ React, scope, modules, preview, startDraft, css }) 
                 entry(topic.private ? '取消私密' : '设为私密', () => perform(() => controller.manageTopic(topic.id, { private: !topic.private })))))))
         }) : h('p', { className: 'theone-native-empty' }, query ? '没有匹配的话题' : '把不同的事情交给 TheOne，它们会出现在这里。'))),
       state.error && h('p', { role: 'alert', className: 'theone-native-error' }, state.error)))
-  return { active: state.active, open: () => controller.open(), contextMenu: event => { event.preventDefault(); openPanel('settings') },
+  return { active: state.active, open: () => controller.open(), contextMenu: event => { event.preventDefault(); openPanel('menu') },
     subtitle: state.loading ? '正在打开…' : state.gateway?.enabled === false ? '已停用 · 右键设置' : currentTopic && state.active ? currentTopic.title : '从这里继续聊', controls }
 }

@@ -2,7 +2,8 @@ export class DesktopController {
   listeners = new Set()
   state = { gateway: null, topics: [], activity: [], loading: false, error: null, active: false, pendingTopicId: null, historyPrompt: false, historyChoices: null,
     historyModelOptions: null, historyModelSelection: null, historyModelsError: null,
-    routerModelOptions: null, routerModelSelection: null, routerModelsError: null, update: null }
+    routerModelOptions: null, routerModelSelection: null, routerModelsError: null, update: null,
+    routes: null, routeStats: null, routesError: null, diagnostics: null, diagnosticsLoading: false, diagnosticsError: null }
   epoch = 0
   constructor(host) { this.host = host; this.record = host.load(); this.state = { ...this.state, pendingTopicId: this.record?.pendingTopicId ?? null }; this.updateActive() }
   getSnapshot = () => this.state
@@ -102,6 +103,37 @@ export class DesktopController {
       if (!this.state.gateway) throw Error('发送第一条消息后即可设置这个主聊天。')
       await this.host.call('theone_configure', { gatewayId: this.state.gateway.gatewayId, ...change }); await this.refresh()
     })
+  }
+  async recentRoutes() {
+    const request = this.routesRequest = (this.routesRequest ?? 0) + 1
+    const gatewayId = this.state.gateway?.gatewayId
+    if (!gatewayId) { this.emit({ routes: [], routeStats: null, routesError: null }); return }
+    try {
+      const result = await this.host.call('theone_recent_routes', { gatewayId })
+      if (request === this.routesRequest && gatewayId === this.state.gateway?.gatewayId) this.emit({ routes: result.routes, routeStats: result.stats, routesError: null })
+    } catch (error) { if (request === this.routesRequest && gatewayId === this.state.gateway?.gatewayId) this.emit({ routes: [], routesError: error.message }) }
+  }
+  async correctRoute(inputId, topicId, undo = false) {
+    return this.action(async () => {
+      const gatewayId = this.state.gateway?.gatewayId
+      if (!gatewayId) throw Error('先打开 TheOne 主聊天。')
+      try { await this.host.call('theone_correct_route', { gatewayId, inputId, ...(undo ? { undo: true } : { topicId }) }) }
+      catch (error) {
+        if (error.statusCode === 409) throw Error(error.message === 'NOT_MOVED' ? '这条记录已经撤销，请刷新分配记录。' : '话题正在处理消息，等它完成或停止后再改。')
+        throw error
+      }
+      await this.refresh(); await this.recentRoutes()
+    })
+  }
+  async feedbackDiagnostics(inputId) {
+    const request = this.diagnosticsRequest = (this.diagnosticsRequest ?? 0) + 1
+    this.emit({ diagnostics: null, diagnosticsLoading: true, diagnosticsError: null })
+    try {
+      const gatewayId = this.state.gateway?.gatewayId
+      const diagnostics = await this.host.call('theone_feedback_diagnostics', { ...(gatewayId ? { gatewayId } : {}), ...(inputId ? { inputId } : {}) })
+      if (request === this.diagnosticsRequest) this.emit({ diagnostics })
+    } catch (error) { if (request === this.diagnosticsRequest) this.emit({ diagnosticsError: error.message }) }
+    finally { if (request === this.diagnosticsRequest) this.emit({ diagnosticsLoading: false }) }
   }
   async historySessions() {
     return this.action(async () => { const choices = await this.host.call('theone_history_sessions', {}); this.emit({ historyChoices: choices }); return choices })

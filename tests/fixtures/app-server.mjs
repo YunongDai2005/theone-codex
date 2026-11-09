@@ -10,12 +10,16 @@ const finish = (threadId, turnId, text, status = 'completed') => {
 return msg => {
   if (!msg.method) {
     const p = pending.get(msg.id)
-    if (p) { pending.delete(msg.id); finish(p.threadId, p.turnId, p.kind === 'question' ? JSON.stringify(msg.result?.answers) : msg.result?.decision === 'accept' ? 'approved' : 'declined') }
+    if (p) {
+      pending.delete(msg.id)
+      if (p.next && msg.result?.decision === 'accept') { p.next(); return }
+      finish(p.threadId, p.turnId, p.kind === 'question' ? JSON.stringify(msg.result?.answers) : msg.result?.decision === 'accept' ? 'approved' : 'declined')
+    }
     return
   }
   const result = value => send({ id: msg.id, result: value })
   const p = msg.params ?? {}
-  if (msg.method === 'initialize') result({ userAgent: 'fake-codex', platformFamily: 'windows' })
+  if (msg.method === 'initialize') result({ userAgent: 'codex_cli_rs/1.2.3 (fixture)', platformFamily: 'windows' })
   else if (msg.method === 'thread/start') { const id = `t-${++n}`; threads.set(id, []); result({ thread: { id } }) }
   else if (msg.method === 'thread/resume') { if (!threads.has(p.threadId)) threads.set(p.threadId, []); result({ thread: { id: p.threadId } }) }
   else if (msg.method === 'turn/start') {
@@ -23,6 +27,20 @@ return msg => {
     turns.set(threadId, id)
     result({ turn: { id, status: 'inProgress' } })
     send({ method: 'turn/started', params: { threadId, turn: { id } } })
+    if (text.startsWith('target-check:')) {
+      const { outside, file, twice, hold, expectedSandbox } = JSON.parse(text.slice('target-check:'.length))
+      if (expectedSandbox && p.sandboxPolicy.type !== expectedSandbox) { finish(threadId, id, 'unsafe-initial-sandbox', 'failed'); return }
+      const request = (second = false) => {
+        const itemId = second ? 'second-change' : 'first-change'
+        const cwd = outside ?? p.cwd
+        if (file) send({ method: 'item/started', params: { threadId, turnId: id, item: { id: itemId, type: 'fileChange', status: 'inProgress', changes: [{ path: cwd + '/file.txt', kind: { type: 'update' }, diff: '' }] } } })
+        const requestId = ++requestNo
+        pending.set(requestId, { threadId, turnId: id, ...(twice && !second ? { next: () => request(true) } : hold ? { next: () => {} } : {}) })
+        send({ id: requestId, method: file ? 'item/fileChange/requestApproval' : 'item/commandExecution/requestApproval',
+          params: { threadId, turnId: id, itemId, startedAtMs: Date.now(), ...(file ? {} : { command: 'write a file', cwd }) } })
+      }
+      request(); return
+    }
     if (text?.includes('crash')) return crash()
     if (text.includes('hang')) return
     if (text.includes('unknown-request')) { const requestId = ++requestNo; pending.set(requestId, { threadId, turnId: id }); send({ id: requestId, method: 'account/chatgptAuthTokens/refresh', params: { reason: 'fixture' } }); return }

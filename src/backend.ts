@@ -9,6 +9,8 @@ export interface WorkerRequest extends WorkerConfig {
   threadId?: string
   text: string
   reference: string
+  returnNote?: string
+  targetCheck?: import('./target-check.ts').TargetCheck
   attachments?: WorkerAttachment[]
 }
 type MediaRef = { url: string; fileId?: never } | { fileId: string; url?: never }
@@ -36,11 +38,13 @@ export type WorkerEvent =
   | { type: 'progress'; text: string }
   | { type: 'approval'; approval: Approval }
   | { type: 'approval-resolved'; id: string }
+  | { type: 'target-checked'; answer: 'confirmed' | 'declined' }
 export interface WorkerResult { status: 'completed' | 'failed' | 'interrupted'; error?: string }
 export interface WorkerBackend {
   execute(request: WorkerRequest, emit: (event: WorkerEvent) => void, signal: AbortSignal): Promise<WorkerResult>
   respond(approval: Approval, response: { decision?: 'accept' | 'decline' | 'cancel'; answers?: Record<string, { answers: string[] }> }): Promise<void>
   steer?(request: { threadId: string; turnId: string; text: string; attachments?: WorkerAttachment[] }): Promise<void>
   compact?(threadId: string): Promise<unknown>
+  version?(): Promise<string>
   close(): Promise<void>
 }

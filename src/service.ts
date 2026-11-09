@@ -22,6 +22,7 @@ import { TopicMerges } from './topic-merges.ts'
 import type { DesktopCursor } from './desktop-events.ts'
 import { continuesCurrent, resumesWork, newIndependentTopic, settleUnclear } from './routing-policy.ts'
 import { ReleaseChecker } from './update-check.ts'
+import { returnNote } from './topic-memory.ts'
 
 export interface GatewaySettings {
   gatewayId: string; workspace: string; sandbox: WorkerConfig['sandbox']; model?: string
@@ -42,8 +43,9 @@ export interface Run {
   threadId?: string; turnId?: string; error?: string; progress?: string
   approvals: Approval[]; output: { id: string; text: string; phase?: string }[]; delivered: boolean
   requestedSandbox?: WorkerConfig['sandbox']
+  targetConfirmation?: 'confirmed' | 'declined'
   foreground?: boolean; attachments?: WorkerAttachment[]; steeringOf?: string
-  queueReason?: 'topic_busy' | 'project_busy'; waitingKind?: 'question' | 'approval'
+  queueReason?: 'topic_busy' | 'project_busy' | 'capacity'; waitingKind?: 'question' | 'approval'
 }
 interface TemporaryTopic { topicId: string; gatewayId: string; returnTopicId?: string; inputId: string }
 interface ForegroundReply { messageId: string; topicId: string; returnTopicId?: string }
@@ -356,6 +358,7 @@ export class TheOneService {
     decision.alternateIds = decision.alternateIds?.filter(id => latest.some(t => t.id === id))
     if (decision.action === 'CREATE' && decision.aside) receipt.temporary = { returnTopicId: this.store.current(input.gatewayId), sources: [] }
     receipt.elapsedMs = Date.now() - started
+    receipt.confidence = decision.needsTargetConfirmation || decision.reason.startsWith('unclear-') || !!routingError ? 'low' : 'high'
     if (preview) return { inputId: input.inputId, topicId: decision.contextId, decision, receipt, ...(routingError ? { routingError } : {}) }
     const planned = this.store.plan(key, input.gatewayId, input.gatewayId, { ...decision, ...(decision.action === 'CREATE' ? { folder: settings.workspace } : {}) }, !receipt.temporary && input.foreground !== false)
     const result = { inputId: input.inputId, topicId: planned.decision.contextId, decision: planned.decision, receipt, ...(routingError ? { routingError } : {}) }
@@ -401,12 +404,14 @@ export class TheOneService {
   private referencePacket(id: string, scope: LinkScope, inputId?: string) {
     const topic = this.context(id)
     const others = relatedTopics(this.store, id, scope).filter(t => this.visible(t.id, id, scope))
-    const history = this.messages(this.topicIds(id)).slice(-12).map(m => ({ id: m.id, topicId: m.topicId, role: m.role, source: m.source, text: m.text.slice(0, 600) }))
+    const messages = this.messages(this.topicIds(id)).filter(m => m.id !== inputId)
+    const history = messages.slice(-12).map(m => ({ id: m.id, topicId: m.topicId, role: m.role, source: m.source, text: m.text.slice(0, 600) }))
+    const note = returnNote(messages.at(-1)?.at)
     const imports = [...(inputId ? this.store.route(inputId)?.decision.imports ?? [] : []), ...others.flatMap(t => this.store.facts(t.id).filter(f => f.status === 'confirmed').slice(0, 5).map(f => f.id))]
     const delivery = factDelivery(this.store, scope, id, imports, inputId)
-    const text = JSON.stringify({ referenceOnly: true, topic: { id, title: topic.title, digest: topicDigest(this.store, topic, 2000), constraints: this.store.constraints(id)?.text, recentHistory: history, facts: this.store.facts(id, true).slice(0, 20) },
+    const text = JSON.stringify({ referenceOnly: true, ...(note ? { returnNote: note.trim() } : {}), topic: { id, title: topic.title, digest: topicDigest(this.store, topic, 2000), constraints: this.store.constraints(id)?.text, recentHistory: history, facts: this.store.facts(id, true).slice(0, 20) },
       related: others.map(t => ({ id: t.id, title: t.title, digest: topicDigest(this.store, this.context(t.id), 600) })), sharedFacts: delivery.facts, changes: delivery.notices })
-    return { text, commit: delivery.commit }
+    return { text, returnNote: note, commit: delivery.commit }
   }
   lookupFacts(query: string, readerTopicId: string, scope: LinkScope = 'auto') {
     this.context(readerTopicId)
@@ -464,22 +469,51 @@ export class TheOneService {
     this.runtime.appendEvent({ type: 'topic.changed', contextId: id }); this.suggestionsDirty = true
     return { deleted: id, nativeThreadDeleted: false }
   }
-  correct(gatewayId: string, inputId: string, topicId: string) {
+  recentRoutes(gatewayId: string, limit = 30) {
+    this.settings(gatewayId)
+    return { routes: this.store.recentRoutes(gatewayId, Math.max(1, Math.min(100, limit))).flatMap(route => {
+      const input = this.runtime.get<InputRecord>('input', route.messageId)
+      return input?.gatewayId === gatewayId ? [{ ...route, inputId: input.inputId }] : []
+    }), stats: this.store.routeStats(gatewayId) }
+  }
+  async feedbackDiagnostics(gatewayId?: string, inputId?: string) {
+    const rows = gatewayId ? this.recentRoutes(gatewayId, 100).routes : []
+    const selected = inputId ? rows.filter(r => r.inputId === inputId) : rows
+    const sources = new Set(['explicit','proposal','codex','http','rules','fallback','preroute'])
+    const code = (value: unknown) => typeof value === 'string' && /^ROUTER_(?:UNAVAILABLE|TIMEOUT|DISCONNECTED|INVALID_JSON|INVALID_DECISION|STALE_TOPIC|HTTP_\d{3}|NOT_CONFIGURED|ABORTED)$/.test(value) ? value : value ? 'OTHER' : null
+    let codexVersion = 'unknown'
+    try { codexVersion = await this.options.backend?.version?.() ?? 'unknown' } catch {}
+    if (!/^\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9.-]+)?$/.test(codexVersion)) codexVersion = 'unknown'
+    return { version: this.statusVersion(), codexVersion, routes: selected.slice(0, 5).map(r => ({
+      source: sources.has(r.receipt?.source ?? '') ? r.receipt!.source! : 'unknown',
+      errorCode: code(r.receipt?.errorCode),
+      elapsedMs: Number.isFinite(r.receipt?.elapsedMs) && r.receipt!.elapsedMs! >= 0 ? Math.round(r.receipt!.elapsedMs!) : null,
+    })) }
+  }
+  private statusVersion() { return '0.1.0-alpha.9' }
+  correct(gatewayId: string, inputId: string, topicId?: string, undo = false) {
     if (!this.settings(gatewayId).enabled) throw Error('GATEWAY_DISABLED')
-    this.context(topicId)
-    if (!this.visible(topicId)) throw Error('TOPIC_EXCLUDED')
+    if (undo && topicId || !undo && !topicId) throw Error('CORRECTION_TARGET_INVALID')
     const key = keyOf(gatewayId, inputId), input = this.runtime.get<InputRecord>('input', key)
     if (!input) throw new Error('INPUT_NOT_FOUND')
+    const original = this.store.route(key)
+    if (undo) topicId = original?.decision.contextId
+    if (!topicId) throw Error('ORIGINAL_TOPIC_UNAVAILABLE')
+    this.context(topicId)
+    if (!this.visible(topicId)) throw Error('TOPIC_EXCLUDED')
     const run = this.runtime.get<Run>('run', key)
     if (run && !terminal.has(run.status)) throw Object.assign(new Error('CANCEL_RUN_BEFORE_CORRECTION'), { statusCode: 409 })
     const fromId = this.runtime.get<Message>('message', key)?.topicId ?? input.result?.topicId
     this.idle(topicId, ...(fromId ? [fromId] : []))
-    this.store.correctRoute(key, topicId)
+    if (undo) {
+      if (!this.store.uncorrectRoute(key)) throw Object.assign(Error('NOT_MOVED'), { statusCode: 409 })
+    } else this.store.correctRoute(key, topicId)
     const message = this.runtime.get<Message>('message', key)
     if (message) this.runtime.put('message', key, { ...message, topicId })
-    if (input.result) this.runtime.put('input', key, { ...input, result: { ...input.result, topicId, decision: { ...input.result.decision, contextId: topicId } } })
+    if (input.result) this.runtime.put('input', key, { ...input, result: { ...input.result, topicId, decision: undo ? original!.decision : { ...input.result.decision, contextId: topicId } } })
+    this.store.mount(gatewayId, topicId)
     if (fromId) this.runtime.appendEvent({ type: 'route.moved', fromId, toId: topicId, messageId: inputId }, gatewayId)
-    return { correctedTo: topicId, sideEffectsUndone: false, rerunRequiresNewInputId: true }
+    return { correctedTo: undo ? null : topicId, topicId, undone: undo, sideEffectsUndone: false, rerunRequiresNewInputId: true }
   }
   exportHistory() {
     return { version: 1 as const, source: 'gpt-theone', topics: this.store.contexts().map(t => ({ id: t.id, title: t.title, summary: t.summary, private: this.store.isPrivate(t.id), messages: this.messages(this.topicIds(t.id)) })) }
@@ -534,7 +568,9 @@ export class TheOneService {
     const binding = this.runtime.get<Binding>('binding', routed.topicId)
     if (binding && pathKey(binding.cwd) !== pathKey(cwd)) throw new Error('TOPIC_WORKSPACE_CONFLICT')
     if (!this.options.backend) throw new Error('CODEX_BACKEND_NOT_CONFIGURED')
-    const target = this.steerTarget(input.gatewayId, routed.topicId)
+    // A doubtful new message must get its own gate instead of inheriting a
+    // previous message's confirmed turn through native steering.
+    const target = routed.receipt.confidence === 'low' || routed.decision.alternateIds?.length ? undefined : this.steerTarget(input.gatewayId, routed.topicId)
     const run: Run = { id, gatewayId: input.gatewayId, inputId: input.inputId, topicId: routed.topicId, cwd, text: input.text, status: target ? 'starting' : 'queued', at: Date.now(), updatedAt: Date.now(), owner: this.owner, pid: process.pid, requestedSandbox: settings.sandbox, approvals: [], output: [], delivered: false,
       attachments: input.attachments, foreground: input.foreground !== false, ...(target ? { steeringOf: target.id, threadId: target.threadId, turnId: target.turnId } : {}) }
     let inserted = false
@@ -554,7 +590,7 @@ export class TheOneService {
     if (!this.options.backend?.steer) return
     const settings = this.settings(gatewayId)
     if (!settings.enabled) return
-    return this.runs(gatewayId).find(r => r.topicId === topicId && r.owner === this.owner && r.status === 'running' && r.threadId && r.turnId && !r.steeringOf &&
+    return this.runs(gatewayId).find(r => r.topicId === topicId && r.owner === this.owner && r.status === 'running' && r.threadId && r.turnId && !r.steeringOf && !r.targetConfirmation &&
       (settings.sandbox === 'workspace-write' || r.requestedSandbox === 'read-only') && within(settings.workspace, r.cwd))
   }
   run(id: string) { const r = this.runtime.get<Run>('run', id); if (!r) throw new Error('RUN_NOT_FOUND'); return r }
@@ -579,8 +615,9 @@ export class TheOneService {
     if (this.stopped || !this.options.backend) return
     for (const run of this.runs()) {
       if (run.owner !== this.owner || run.status !== 'queued' || this.active.has(run.id)) continue
-      if (!this.runtime.lock([`workspace:${projectKey(run.cwd)}`, `topic:${run.topicId}`], run.id)) {
-        const reason = this.runs().some(other => other.id !== run.id && other.topicId === run.topicId && ['starting','running','waiting_approval'].includes(other.status)) ? 'topic_busy' : 'project_busy'
+      const lease = this.runtime.lockExecution([`workspace:${projectKey(run.cwd)}`, `topic:${run.topicId}`], run.id)
+      if (lease !== 'acquired') {
+        const reason = lease === 'capacity' ? 'capacity' : this.runs().some(other => other.id !== run.id && other.topicId === run.topicId && ['starting','running','waiting_approval'].includes(other.status)) ? 'topic_busy' : 'project_busy'
         if (run.queueReason !== reason) { run.queueReason = reason; this.saveRun(run) }
         continue
       }
@@ -599,7 +636,10 @@ export class TheOneService {
       if (binding && pathKey(binding.cwd) !== pathKey(run.cwd)) throw new Error('TOPIC_WORKSPACE_CONFLICT')
       const sandbox = run.requestedSandbox === 'read-only' || settings.sandbox === 'read-only' ? 'read-only' : 'workspace-write'
       const packet = this.referencePacket(run.topicId, settings.linkScope, run.id); let committed = false
-      const result = await this.options.backend!.execute({ runId: run.id, threadId: binding?.threadId, cwd: run.cwd, sandbox, model: settings.model, effort: settings.effort, text: run.text, attachments: run.attachments, reference: packet.text }, event => {
+      const route = this.runtime.get<InputRecord>('input', run.id)?.result
+      const targetCheck = { title: this.context(run.topicId).title, alternateTitles: (route?.decision.alternateIds ?? []).filter(id => id !== run.topicId && this.visible(id)).flatMap(id => this.listTopics().find(t => t.id === id)?.title ?? []).slice(0, 3),
+        uncertain: !!route?.decision.needsTargetConfirmation || route?.receipt.confidence === 'low', answer: run.targetConfirmation }
+      const result = await this.options.backend!.execute({ runId: run.id, threadId: binding?.threadId, cwd: run.cwd, sandbox, model: settings.model, effort: settings.effort, text: run.text, attachments: run.attachments, reference: packet.text, returnNote: packet.returnNote, targetCheck }, event => {
         this.event(run.id, event)
         if (!committed && event.type === 'started' && event.turnId) { packet.commit(); committed = true }
       }, controller.signal)
@@ -626,6 +666,7 @@ export class TheOneService {
       const messageId = `${id}:${event.id}`
       this.runtime.put('message', messageId, { id: messageId, topicId: run.topicId, role: 'assistant', text: event.text, at: Date.now(), source: 'codex', runId: id, hostThreadId: run.threadId, hostTurnId: run.turnId } satisfies Message)
     } else if (event.type === 'progress') run.progress = ((run.progress ?? '') + event.text).slice(-4000)
+    else if (event.type === 'target-checked') run.targetConfirmation = event.answer
     else if (event.type === 'approval') { run.approvals.push(event.approval); run.status = 'waiting_approval'; run.waitingKind = run.approvals.some(a => a.method === 'item/tool/requestUserInput') ? 'question' : 'approval' }
     else if (event.type === 'approval-resolved') { run.approvals = run.approvals.filter(a => a.id !== event.id); if (!run.approvals.length) run.status = 'running' }
     this.saveRun(run)

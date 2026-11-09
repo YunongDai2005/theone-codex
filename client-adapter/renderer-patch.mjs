@@ -19,7 +19,7 @@ export function patchRenderer(source) {
   const entry = `${CELL_COMPONENT}${DESKTOP_RUNTIME}function TheOneClientEntry(){
     const scope=(0,l.gh)(A.u);
     const preview=(0,c.useContext)(cq.I).previewNavigationState;
-    const desktop=TheOneDesktop.useDesktop({React:c,scope,modules:n,preview,css:${JSON.stringify(DESKTOP_CSS)},startDraft:(draft,created)=>{(0,a$.ub)(scope,{
+    const desktop=TheOneDesktop.useDesktop({React:c,scope,modules:n,preview,adapterVersion:${JSON.stringify(ADAPTER_VERSION)},css:${JSON.stringify(DESKTOP_CSS)},startDraft:(draft,created)=>{(0,a$.ub)(scope,{
       canStartProjectlessChat:scope.get(dt.T$),currentThreadKey:scope.get(tF.oN),localProjectActionsEnabled:scope.get(dt.Lk),
       startNewConversation:options=>{(0,aB.startNewConversation)(scope,{...options,...draft});created()},
       startNewConversationInProject:project=>{(0,dx.E)(scope,project,draft);created()}

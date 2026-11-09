@@ -24,6 +24,7 @@ export class AppServer extends EventEmitter {
   private nextId = 0
   private pending = new Map<number, { resolve: (value: any) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>()
   disconnected = false
+  version = 'unknown'
   constructor(private options: AppServerOptions = {}) { super() }
   async connect(): Promise<void> {
     return this.ready ??= this.initialize()
@@ -55,7 +56,8 @@ export class AppServer extends EventEmitter {
         }
       } catch { this.disconnect(new Error('CODEX_PROTOCOL_INVALID')) }
     })
-    await this.request('initialize', { clientInfo: { name: 'gpt-theone', title: 'TheOne', version: '0.1.0-alpha.1' }, ...(this.options.experimentalApi ? { capabilities: { experimentalApi: true } } : {}) })
+    const initialized = await this.request('initialize', { clientInfo: { name: 'gpt-theone', title: 'TheOne', version: '0.1.0-alpha.1' }, ...(this.options.experimentalApi ? { capabilities: { experimentalApi: true } } : {}) })
+    this.version = /\bcodex(?:_cli_rs)?[\/ ](\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9.-]+)?)/i.exec(initialized.userAgent ?? '')?.[1] ?? 'unknown'
     this.send({ method: 'initialized' })
   }
   send(message: RpcMessage): void {

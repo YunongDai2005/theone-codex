@@ -8,6 +8,26 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { createMcpServer } from '../src/mcp-server.ts'
 import { TheOneService } from '../src/service.ts'
 
+test('MCP route panel supports correction, undo, and content-free feedback diagnostics', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'theone-ux-mcp-')), service = new TheOneService({ dataDir: dir })
+  const server = createMcpServer(service), client = new Client({ name: 'ux-client', version: '1' }), [a,b] = InMemoryTransport.createLinkedPair()
+  try {
+    await server.connect(a); await client.connect(b)
+    service.configure('main', { workspace: dir })
+    const original = service.createTopic('原话题'), target = service.createTopic('新话题')
+    await service.route({ gatewayId: 'main', inputId: 'message', text: 'private-message', topicId: original })
+    const call = (name: string, args: object) => client.callTool({ name, arguments: args as any })
+    const recent = await call('theone_recent_routes', { gatewayId: 'main' })
+    assert.equal(recent.isError, undefined)
+    assert.equal((recent.structuredContent as any).result.routes[0].inputId, 'message')
+    assert.equal((await call('theone_correct_route', { gatewayId: 'main', inputId: 'message', topicId: target })).isError, undefined)
+    assert.equal((await call('theone_correct_route', { gatewayId: 'main', inputId: 'message', undo: true })).isError, undefined)
+    assert.equal(service.search('private-message')[0].topicId, original)
+    const feedback = await call('theone_feedback_diagnostics', { gatewayId: 'main', inputId: 'message' })
+    assert.equal(feedback.isError, undefined); assert.doesNotMatch(JSON.stringify(feedback), /private-message|原话题|新话题|theone-ux-mcp/)
+  } finally { await client.close(); await server.close(); await service.close(); rmSync(dir, { recursive: true, force: true }) }
+})
+
 test('official MCP client can discover, validate and use the topic workflow', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'theone-mcp-'))
   const service = new TheOneService({ dataDir: dir })

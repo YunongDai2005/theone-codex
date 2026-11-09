@@ -75,6 +75,7 @@ export function newRoutingTrace(): RoutingTrace {
   return { candidateIds: [], recheck: { attempted: false }, review: { attempted: false, pages: [] }, autoSettled: false }
 }
 export interface RouterReceipt {
+  confidence?: 'high' | 'low'
   source?: 'explicit' | 'proposal' | 'codex' | 'http' | 'rules' | 'fallback' | 'preroute'
   waitMs?: number
   binding?: BindingResolution
