@@ -4,6 +4,7 @@ export interface Progress { goal: string; done: string; next: string }
 export interface ContextDescriptor {
   id: string
   title: string
+  label?: string
   summary: string
   entities: string[]
   keywords: string[]
@@ -35,6 +36,7 @@ export interface Decision {
   action: Action
   contextId?: string
   title?: string
+  label?: string
   reason: string
   question?: string
   /** CREATE can proceed during indexing only when the request needs no missing history. */

@@ -4,6 +4,8 @@ import type { ContextDescriptor, Decision } from './types.ts'
 import { newIndependentTopic, referencesHistory, redactRoutingText } from './routing-policy.ts'
 import { FACT_LIMITS, type FactCandidate } from './facts.ts'
 import { EVIDENCE_LIMITS, RECHECK_PROMPT, type Recheck } from './routing-evidence.ts'
+import { normalizeTopicLabel } from './topic-label.ts'
+import type { RouterModelSettings, RouterModelChoice } from './router-model-settings.ts'
 export { redactRoutingText } from './routing-policy.ts'
 
 export interface RecentMessage { role: 'user' | 'assistant'; text: string }
@@ -68,11 +70,12 @@ export interface RouterCall {
   errorDetail?: string
 }
 export type RouterAttempt = Omit<RouterCall, 'layer' | 'candidateIds'> & { attempt: number }
-export interface RoutingOptions { think?: boolean; onAttempt?: (attempt: RouterAttempt) => void }
+export interface RoutingOptions { think?: boolean; onAttempt?: (attempt: RouterAttempt) => void; modelSettings?: RouterModelSettings }
 export function newRoutingTrace(): RoutingTrace {
   return { candidateIds: [], recheck: { attempted: false }, review: { attempted: false, pages: [] }, autoSettled: false }
 }
 export interface RouterReceipt {
+  source?: 'explicit' | 'proposal' | 'codex' | 'http' | 'rules' | 'fallback'
   binding?: BindingResolution
   continuation?: ContinuationResolution
   temporary?: TemporaryReturn
@@ -107,7 +110,8 @@ contexts 中的 project（可能没有）是该话题工作所在的项目文件
 CLARIFY 仅限：用户明确引用缺失旧聊天（如“继续上次那个”“用之前的链接”）；或者用户只指一个话题，但有两个以上确实相关的旧话题都可能是它，选错会改变后续处理且近期消息无法判断。第二种必须在 candidateIds 列出至少两个相关目录 ID。弱相关候选不构成澄清理由。多件独立任务可在一个新会话交给 Worker 处理，不因任务多而追问。
 只判断语义选择：EXISTING 选择一个已有话题；CREATE 创建新话题；CLARIFY 请求澄清。已有话题的KEEP、MOUNT、SWAP由程序根据挂载状态计算，你不要输出这三个机械动作。currentId为null表示尚未挂载话题，近期对话不代表已经挂载。
 输出 JSON：{"action":"EXISTING|CREATE|CLARIFY","contextId":"已有目录ID或null","relatedIds":"EXISTING或CREATE时本轮同时用到的其他目录ID数组，否则空数组","imports":"本轮使用的symbols ID数组，没有symbols时为空数组","title":"CREATE时的新话题标题，否则null","historyIndependent":"CREATE时为boolean，其他为null","aside":"CREATE时可选boolean，其他省略或null","projectId":"CREATE时选择的projects ID，否则或没有projects时为null","candidateIds":"CLARIFY时真正难以选择的多个目录ID数组，否则空数组","question":"CLARIFY时的简短澄清问题，否则null","reason":"不超过40字的判断依据"}。
-不得编造目录ID。CREATE和CLARIFY的contextId必须为null。title、question、reason 用本轮 text 的语言书写。`
+不得编造目录ID。CREATE和CLARIFY的contextId必须为null。title、question、reason 用本轮 text 的语言书写。
+CREATE 时另给 label：2至4个汉字或1至2个拉丁字母词（总计不超过24字符）的短名；无法提供时为null，其他动作也为null。`
 
 /** Fixed instructions; absent optional data never asks the router to do extra work. */
 export const FACTS_PROMPT = `
@@ -261,7 +265,8 @@ export function validateRoutingDecision(value: unknown, input: RoutingInput): De
     if (matches.length === 1) return existing(matches[0].id)
     // A project folder only from the offered list; anything else is ignored rather than failing the route.
     const project = typeof row.projectId === 'string' && (input.projects ?? []).some(item => item.id === row.projectId) ? { projectId: row.projectId } : {}
-    return { action: 'CREATE', title, reason, ...related(), ...imports, ...project, ...(row.aside === true ? { aside: true } : {}),
+    const label = normalizeTopicLabel(row.label)
+    return { action: 'CREATE', title, ...(label ? { label } : {}), reason, ...related(), ...imports, ...project, ...(row.aside === true ? { aside: true } : {}),
       ...(!referencesHistory(input.text) ? { historyIndependent: true } : typeof row.historyIndependent === 'boolean' ? { historyIndependent: row.historyIndependent } : {}) }
   }
   if (typeof row.question !== 'string' || !row.question.trim()) return fail('missing-question')
@@ -276,6 +281,9 @@ export function validateRoutingDecision(value: unknown, input: RoutingInput): De
 }
 
 export interface RoutingRouter {
+  readonly source?: 'codex' | 'http'
+  models?(): Promise<RouterModelChoice[]>
+  close?(): Promise<void>
   decide(input: RoutingInput, signal?: AbortSignal, sessionId?: string, options?: RoutingOptions): Promise<RoutingResult>
 }
 

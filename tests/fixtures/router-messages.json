@@ -1,0 +1,17 @@
+{
+  "contexts": [
+    { "id": "book", "title": "科幻书稿", "label": "书稿", "summary": "写作并修改科幻长篇，正在改第一章。", "entities": ["书稿"], "keywords": ["第一章", "主角"], "lastState": "等待修改开头" },
+    { "id": "camp", "title": "周末露营计划", "label": "露营", "summary": "准备周末双人露营的路线与装备。", "entities": ["露营"], "keywords": ["帐篷", "路线"], "lastState": "比较装备" },
+    { "id": "router", "title": "TheOne 路由开发", "label": "路由", "summary": "接入 Codex 登录和模型归属建议。", "entities": ["TheOne", "Codex"], "keywords": ["路由", "proposal"], "lastState": "补充自动化测试" }
+  ],
+  "samples": [
+    { "name": "continuation", "text": "继续", "currentId": "book", "recent": [{ "role": "assistant", "text": "接下来修改第一章开头。" }] },
+    { "name": "named-topic", "text": "回到周末露营计划，补充雨天方案。", "currentId": "book" },
+    { "name": "new-task", "text": "帮我设计一个每天练习十五分钟的吉他入门计划。" },
+    { "name": "code-followup", "text": "TheOne 的 proposal 冲突测试还要覆盖哪些分支？", "currentId": "router" },
+    { "name": "missing-history", "text": "继续昨天那个方案，用之前的链接。" },
+    { "name": "aside", "text": "一英寸是多少厘米？", "currentId": "router" },
+    { "name": "multiple-topics", "text": "结合露营的经历改一下书稿里的户外场景。", "currentId": "book" },
+    { "name": "negated-switch", "text": "先不管露营，继续书稿的第一章。", "currentId": "book" }
+  ]
+}

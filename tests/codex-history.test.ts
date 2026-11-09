@@ -1,6 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { resolve } from 'node:path'
+// @ts-expect-error JavaScript fixture has no declaration file.
+import { installInProcessRouter } from './fixtures/in-process-router.mjs'
 const options = { command: process.execPath, args: [resolve('tests/fixtures/catalog-app-server.mjs')] }
 test('native source follows session and turn pagination without starting or resuming conversations', async () => {
   const { CodexHistorySource } = await import('../src/codex-history.ts')
@@ -67,4 +69,25 @@ test('concurrent proposal reconciliation uses the selected model and the same is
   try { assert.deepEqual(await model.reconcile({ proposals: [], contexts: [] }, new AbortController().signal,
     { model: 'gpt-6-luna', effort: 'medium', fast: false }), { matches: [] }) }
   finally { await model.close() }
+})
+
+test('in-process JSON-RPC preserves history pagination, model choice, reconciliation and cancellation', async t => {
+  installInProcessRouter(t)
+  const keepAlive = setInterval(() => {}, 1000)
+  const { CodexHistorySource, CodexCatalogModel } = await import('../src/codex-history.ts')
+  const source = new CodexHistorySource(options)
+  const model = new CodexCatalogModel({ ...options, env: { CATALOG_EXPECT_MODEL: 'gpt-6-luna', CATALOG_EXPECT_EFFORT: 'medium', CATALOG_EXPECT_TIER: 'default' } })
+  try {
+    const signal = new AbortController().signal
+    assert.deepEqual((await source.list(signal)).map(s => s.id), ['first','second'])
+    assert.equal((await source.read('first', signal)).turns.length, 2)
+    assert.deepEqual((await model.models()).map(m => m.model), ['gpt-6-astra','gpt-6-luna','basic'])
+    assert.deepEqual(await model.classify({}, signal), { topics: [] })
+    assert.deepEqual(await model.reconcile({}, signal), { matches: [] })
+    await assert.rejects(model.classify({}, signal, { model: 'missing', effort: 'low', fast: false }), /模型/)
+    const abort = new AbortController(), pending = model.classify({ text: 'WAIT_FOR_ABORT' }, abort.signal)
+    setTimeout(() => abort.abort(), 10)
+    await assert.rejects(pending, /CATALOG_ABORTED/)
+    assert.deepEqual(await model.classify({}, signal), { topics: [] })
+  } finally { await source.close(); await model.close(); clearInterval(keepAlive) }
 })

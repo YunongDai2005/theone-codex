@@ -5,6 +5,7 @@ import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { randomUUID, createHash } from 'node:crypto'
 import type { ExtractedTopic, HiddenReason, HistoryPart, TopicGroup } from './catalog-types.ts'
+import { normalizeTopicLabel } from './topic-label.ts'
 import type { ContextDescriptor, ContextUsage, Decision, Progress, RouteRecord, RouteView, StoredContext, SourceRange, TopicLink } from './types.ts'
 import { FACT_KINDS, FACT_LIMITS, factKey, safe, type FactEvidence, type FactKind, type FactStatus, type FactView } from './facts.ts'
 import { LearningJournal, uniqueSources, type LearningSource } from './learning-journal.ts'
@@ -533,7 +534,8 @@ export class ContextStore {
         // sees short excerpts; otherwise every re-index after a turn would overwrite them.
         const stated = existing && this.db.prepare('SELECT 1 FROM context_state_updates WHERE context_id = ? LIMIT 1').get(id)
         const summarized = existing && this.db.prepare('SELECT 1 FROM context_summary_updates WHERE context_id = ? LIMIT 1').get(id)
-        const descriptor: ContextDescriptor = { id, title: existing?.title ?? topic.title,
+        const label = normalizeTopicLabel(topic.label) ?? normalizeTopicLabel(existing?.label)
+        const descriptor: ContextDescriptor = { id, title: existing?.title ?? topic.title, ...(label ? { label } : {}),
           summary: summarized ? existing.summary : metadata.summary, entities: metadata.entities, keywords: metadata.keywords,
           lastState: stated ? existing.lastState : metadata.lastState, ...(stated && existing.progress ? { progress: existing.progress } : {}) }
         if (existing) this.catalogDescriptor(id, descriptor)
@@ -810,6 +812,7 @@ export class ContextStore {
     if (proposed.action !== 'CREATE') return { ...proposed }
     const context: ContextDescriptor = {
       id: randomUUID(), title: proposed.title!, summary: '新话题，尚无历史摘要。',
+      ...(normalizeTopicLabel(proposed.label) ? { label: normalizeTopicLabel(proposed.label) } : {}),
       entities: [], keywords: [proposed.title!], lastState: '等待首次执行',
     }
     this.seed([{ ...context, title: '待整理话题', keywords: [] }])

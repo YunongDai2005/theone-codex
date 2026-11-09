@@ -23,6 +23,7 @@ export interface MergeView { sourceId: string; targetId: string; title: string; 
 export interface CatalogSnapshot { groups: TopicGroup[]; contexts: CatalogContext[]; status: CatalogStatus; linkage?: LinkageSnapshot; merges?: MergeView[] }
 export interface HistoryPart { seq: number; endSeq: number; text: string; fingerprint: string }
 export interface ExtractedTopic {
+  label?: string
   contextId: string | null; title: string; summary: string; entities: string[]; keywords: string[]; lastState: string
   turns: number[]; groupId: string | null; groupTitle: string | null; groupSummary: string
   /** Validated compact reuse: apply only these fields to the latest stored descriptor. */

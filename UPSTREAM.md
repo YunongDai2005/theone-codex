@@ -1,5 +1,7 @@
 # Upstream attribution
 
+`src/topic-label.ts` ports `normalizeTopicLabel` and the `bubbleLabel` fallback from DSH `src/topic-label.ts` and `src/bubble-projection.ts`, commit `a943701ad5fcd93d70e05cf409206c14da325b44` (MIT). The fallback is exported against the descriptor fields it uses. Desktop state supplies the resulting label without changing the copied client renderer or styles.
+
 Core modules and tests were ported from YunongDai2005/dsh-theone, MIT License, commit fe436d005be92541ceb82495eacf83d7230c2488. Original copyright is retained in LICENSE.
 
 The DSH model transport is removed from llm-router.ts; host-specific types are mapped in host-types.ts. New Codex/MCP integration is implemented separately. See docs/source-audit.md for the source baseline.

@@ -27,6 +27,8 @@ test('model routing validates candidates and falls back explicitly on malformed 
     const bad = await s.route({ gatewayId: 'main', inputId: '2', text: '昨天另外那件事呢' })
     assert.notEqual(bad.topicId, 'invented')
     assert.match(bad.routingError!, /ROUTER_INVALID_DECISION/)
+    assert.equal(bad.receipt.source, 'fallback'); assert.equal(bad.receipt.model, 'fixture')
+    assert.equal(routed.receipt.source, 'http')
   } finally { await s.close(); await new Promise<void>((resolve, reject) => server.close(e => e ? reject(e) : resolve())); rmSync(dir, { recursive: true, force: true }) }
 })
 
@@ -40,7 +42,9 @@ test('simultaneous identical model inputs share one in-flight route; conflicting
     const pending = s.route(input)
     await assert.rejects(s.route({ ...input, text: 'different' }), /INPUT_CONFLICT/)
     const [a,b] = await Promise.all([pending, s.route(input)])
-    assert.equal(a.topicId, b.topicId); assert.equal(calls, 1); assert.equal(s.listTopics().length, 1)
+    // One shared quick + CREATE recheck sequence, rather than two independent routes.
+    assert.equal(a.topicId, b.topicId); assert.equal(calls, 2); assert.equal(s.listTopics().length, 1)
+    await s.route(input); assert.equal(calls, 2)
   } finally { await s.close(); rmSync(dir, { recursive: true, force: true }) }
 })
 

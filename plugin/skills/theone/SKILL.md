@@ -15,7 +15,9 @@ TheOne 的主聊天负责路由和呈现结果，实际工作保存在各话题�
 
 首次启用时读取 `theone_status`，用当前聊天的真实 ID 作为 `gatewayId`，用用户当前授权的项目目录配置 `theone_configure`。宿主没有提供聊天 ID 时，创建并保存一个稳定的网关名称，说明自动 hook 需要真实聊天 ID。已有设置继续使用；不要把所有聊天都设为入口。需要修改项目文件且用户已授权时可选 `workspace-write`，其他情况使用默认 `read-only`。用户要求停用时将该入口 `enabled` 设为 false。
 
-对于普通任务，调用 `theone_dispatch`，原样传递本轮用户任务及相关澄清。每次新请求使用新的 `inputId`；同一请求的重试复用原 ID。可先列话题并传明确的 `topicId`；路由器要求澄清时先取得答案。执行中出现另一件事时交给它自己的话题，同项目会排队。
+对于普通任务，调用 `theone_dispatch`，原样传递本轮用户任务及相关澄清。每次新请求使用新的 `inputId`；同一请求的重试复用原 ID。每次根据对话和目录给出 `proposal: { topicId, confidence }` 或 `{ newTopic: { title, label }, confidence }`，有把握才写 `high`，否则写 `low`。用户明确点名话题时用显式 `topicId`。首次可用 `theone_list_topics` 获取目录；保留 dispatch 返回的目录和 `catalogVersion`，下次传回版本，未返回目录时沿用已有目录。短名用2至4个汉字或1至2个英文词。路由器要求澄清时先取得答案。执行中出现另一件事时交给它自己的话题，同项目会排队。
+
+新入口默认 `routerMode: auto`；保留已有入口的设置。`rules` 不调用路由模型，`model` 直接使用模型流程。用 `theone_router_models` 查看路由模型，用 `theone_router_configure` 保存 `modelSettings`；默认 Luna、低思考、标准速度，与历史整理分开。保存的模型失效时报告错误，不静默替换。
 
 返回 run ID 后用 `theone_wait` 继续等待；超时仅说明仍在运行。等待期间简短说明有意义的进展。收到 `waiting_approval` 时向用户展示原审批的命令、目录、原因或问题，然后将对应回答交给 `theone_respond`，不要自行猜测同意。取消任务用 `theone_cancel`。主聊天不要再次执行已经派给 worker 的工具操作。
 

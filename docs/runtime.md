@@ -36,7 +36,15 @@ MCP server 关闭会中断自己拥有的正在执行/排队任务。进程意�
 
 ## 分类与共享
 
-`routerMode=rules` 是默认值。主模型也可通过指定 topicId 做明确归属。启用额外模型分类时先给 MCP 服务器配置：
+新网关默认 `routerMode=auto`：显式 `topicId` 优先；主模型的高置信 `proposal` 通过可见性、排除、同名和规则强匹配检查后直接采用，否则进入模型路由，失败再退回规则。已有网关保存的 `rules` 不变；`rules` 完全不调用路由模型，`model` 不采用 proposal 快捷路径。
+
+未配置 `THEONE_ROUTER_URL` 时使用已有 Codex 登录。路由与历史整理共用 App Server 客户端实现，复用连接，每次建立独立 ephemeral 只读线程，禁用工具、插件、MCP 和环境，使用结构化输出。单次决定默认超时15秒，环境变量 `THEONE_ROUTER_TIMEOUT_MS` 可调整。`theone_router_models` 列出 `model/list` 提供的选择，`theone_router_configure` 接受 `modelSettings: { model, effort, fast }`，单独保存在 `router-model-settings`，不修改历史整理设置。默认优先 Luna、低思考、标准速度；保存的模型失效会报错并退回规则，不替换成别的模型。
+
+模型路径复用语义校验和复核提示词：CREATE、CLARIFY 或唯一证据冲突会复核；截断目录尚有遗漏候选时最多追加三页复核。可恢复错误每层最多两次；超时和模型设置错误不重试。回执 `receipt` 记录 `source`（explicit / proposal / codex / http / rules / fallback）、总耗时、实际模型和调用明细，失败时同时返回 `routingError`。
+
+dispatch 返回最多80条、12000字符的 `catalog`（id、label、title）及 `catalogVersion`，按当前话题共享范围过滤私密和排除项；版本未变不重复返回目录，可传回已知版本。短名优先存储 label，其次短标题，最后选标题中实际出现的实体或关键词。
+
+显式配置 HTTP 提供方时仍优先使用 HttpRouter：
 
 ```text
 THEONE_ROUTER_URL=https://your-provider.example/v1/chat/completions
@@ -44,7 +52,9 @@ THEONE_ROUTER_MODEL=your-routing-model
 THEONE_ROUTER_KEY=your-api-key
 ```
 
-URL 是完整接口地址；只允许 HTTPS 或本地回环 HTTP，不跟随重定向。默认超时 8 秒，不附加 tools，不复用 Codex 账户令牌。随后把网关 routerMode 设为 model。会向该提供方发送限长且基础脱敏的分类上下文，包含话题目录和近期消息。基础脱敏不是完整隐私过滤；应由用户选择服务与数据范围。无效结果或请求异常返回 routingError 并使用规则回退。生产模型准确率、成本和深度复核尚未验收。
+URL 是完整接口地址；只允许 HTTPS 或本地回环 HTTP，不跟随重定向。HTTP 默认超时8秒，不附加 tools，不复用 Codex 账户令牌。会向该提供方发送限长且基础脱敏的分类上下文，包含过滤后的话题目录和近期消息。生产模型准确率、成本和真实延迟尚未验收。
+
+用户手动运行 `node --experimental-transform-types scripts/measure-router.mjs` 可用真实 Codex 登录测量样例；可附加 `--model <model> --effort low --fast` 显式覆盖选择。脚本消耗模型额度，输出每次决定、耗时及 p50/p90，保存到 `evidence/router-latency.json`。首条包含冷连接开销，后续复用或在断线后重连；百分位包含失败尝试，失败数另列。
 
 private 防止向其他话题共享，excluded 防止进入路由、检索和简报。主入口的显式全库阅读/备份可查看私密内容；它不是多用户访问控制系统。给 worker 检索必须使用 readerTopicId。合并私密源后目标变为私密，撤销合并不自动放宽目标隐私。改变隐私无法删除过去已经分享进原生会话的内容，但后续事实通知会撤销继续使用的资格。
 

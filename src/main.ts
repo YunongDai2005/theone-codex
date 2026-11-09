@@ -9,6 +9,7 @@ import { hookContext } from './hook.ts'
 import { AppServer, findCodex } from './app-server.ts'
 import { routerFromEnvironment } from './http-router.ts'
 import { CodexHistorySource, CodexCatalogModel } from './codex-history.ts'
+import { CodexRouter } from './codex-router.ts'
 
 const dataDir = process.env.THEONE_DATA_DIR ?? (process.env.PLUGIN_DATA ? join(process.env.PLUGIN_DATA, 'theone') : join(homedir(), '.gpt-theone'))
 const mode = process.argv[2] ?? 'serve'
@@ -24,7 +25,8 @@ if (mode === 'hook') {
 } else if (mode === 'serve') {
   // An app-server worker inherits this environment. Do not expose a recursive execution gateway.
   if (process.env.THEONE_WORKER === '1') process.exit(0)
-  const service = new TheOneService({ dataDir, backend: new CodexBackend(), router: routerFromEnvironment(), catalog: { source: new CodexHistorySource(), model: new CodexCatalogModel() } })
+  const router = routerFromEnvironment() ?? new CodexRouter({ timeoutMs: process.env.THEONE_ROUTER_TIMEOUT_MS ? Number(process.env.THEONE_ROUTER_TIMEOUT_MS) : undefined })
+  const service = new TheOneService({ dataDir, backend: new CodexBackend(), router, catalog: { source: new CodexHistorySource(), model: new CodexCatalogModel() } })
   const tasks = new TaskManager(service, dataDir)
   const server = createMcpServer(service, tasks)
   let closing = false

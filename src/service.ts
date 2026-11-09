@@ -10,21 +10,25 @@ import { mayShare, relatedTopics, topicDigest, type LinkScope } from './linkage.
 import type { WorkerBackend, WorkerEvent, WorkerConfig, Approval } from './backend.ts'
 import type { Decision } from './types.ts'
 import { projectKey } from './project-queue.ts'
-import type { RoutingRouter, RoutingInput, RouterReceipt } from './llm-router.ts'
+import { RouterFailure, redactRoutingText, type RoutingRouter, type RoutingInput, type RouterReceipt } from './llm-router.ts'
+import { decideWithReview } from './routing-flow.ts'
+import { normalizeTopicLabel, bubbleLabel } from './topic-label.ts'
+import { recommendedRouterModel, validateRouterModel, type RouterModelSettings } from './router-model-settings.ts'
 import { factCandidates, factDelivery } from './fact-flow.ts'
 import { HistoryCatalog, type CatalogOptions } from './history-catalog.ts'
 
 export interface GatewaySettings {
   gatewayId: string; workspace: string; sandbox: WorkerConfig['sandbox']; model?: string
   effort?: WorkerConfig['effort']; linkScope: LinkScope; enabled: boolean
-  routerMode: 'rules' | 'model'
+  routerMode: 'rules' | 'model' | 'auto'
 }
 export interface Message {
   id: string; topicId: string; role: 'user' | 'assistant'; text: string; at: number
   source: 'gateway' | 'codex' | 'import'; runId?: string; hostThreadId?: string; hostTurnId?: string
 }
-export interface RouteInput { gatewayId: string; inputId: string; text: string; topicId?: string }
-export interface RouteResult { inputId: string; topicId?: string; decision: Decision; routingError?: string }
+export type RoutingProposal = ({ topicId: string; newTopic?: never } | { newTopic: { title: string; label: string }; topicId?: never }) & { confidence: 'high' | 'low' }
+export interface RouteInput { gatewayId: string; inputId: string; text: string; topicId?: string; proposal?: RoutingProposal; catalogVersion?: string }
+export interface RouteResult { inputId: string; topicId?: string; decision: Decision; routingError?: string; receipt: RouterReceipt }
 export type RunStatus = 'queued' | 'starting' | 'running' | 'waiting_approval' | 'completed' | 'failed' | 'interrupted' | 'cancelled'
 export interface Run {
   id: string; gatewayId: string; inputId: string; topicId: string; cwd: string; text: string
@@ -77,8 +81,9 @@ export class TheOneService {
     bounded(gatewayId, 200, 'GATEWAY_INVALID')
     const old = this.runtime.get<GatewaySettings>('gateway', gatewayId)
     if (!change.workspace && !old) throw new Error('WORKSPACE_REQUIRED')
-    const settings: GatewaySettings = { sandbox: 'read-only', linkScope: 'auto', routerMode: 'rules', enabled: true, ...old, ...change, gatewayId, workspace: canonical(change.workspace ?? old!.workspace) }
+    const settings: GatewaySettings = { sandbox: 'read-only', linkScope: 'auto', routerMode: 'auto', enabled: true, ...old, ...change, gatewayId, workspace: canonical(change.workspace ?? old!.workspace) }
     if (!['read-only','workspace-write'].includes(settings.sandbox)) throw new Error('SANDBOX_INVALID')
+    if (!['rules','model','auto'].includes(settings.routerMode)) throw new Error('ROUTER_MODE_INVALID')
     if (settings.routerMode === 'model' && !this.options.router) throw new Error('MODEL_ROUTER_NOT_CONFIGURED')
     this.runtime.put('gateway', gatewayId, settings)
     return settings
@@ -86,6 +91,17 @@ export class TheOneService {
   settings(gatewayId: string): GatewaySettings {
     const settings = this.runtime.get<GatewaySettings>('gateway', gatewayId)
     if (!settings) throw new Error('GATEWAY_NOT_CONFIGURED')
+    return settings
+  }
+  async routerModels() {
+    if (!this.options.router?.models) throw Error('ROUTER_MODEL_SETTINGS_UNAVAILABLE')
+    const models = await this.options.router.models(), recommended = recommendedRouterModel(models)
+    return { models, recommendedModel: recommended?.model ?? null,
+      selection: this.runtime.get<RouterModelSettings>('router-model-settings', 'main') ?? recommended }
+  }
+  async configureRouterModel(selection: RouterModelSettings) {
+    const { models } = await this.routerModels(), { settings } = validateRouterModel(selection, models)
+    this.runtime.put('router-model-settings', 'main', settings)
     return settings
   }
   status() { return { version: '0.1.0-alpha.9', gateways: this.runtime.all<GatewaySettings>('gateway'), topics: this.listTopics().length, runs: this.runs(), merges: this.store.merges(), groups: this.store.groups() } }
@@ -106,7 +122,7 @@ export class TheOneService {
     bounded(profileId, 500, 'DESKTOP_PROFILE_INVALID')
     const binding = this.runtime.get<{ gatewayId: string }>('desktop-main', profileId)
     const settings = binding && this.runtime.get<GatewaySettings>('gateway', binding.gatewayId)
-    const topics = this.listTopics().map(topic => ({ id: topic.id, title: topic.title, private: topic.private, done: topic.done,
+    const topics = this.listTopics().map(topic => ({ id: topic.id, title: topic.title, label: bubbleLabel(topic), private: topic.private, done: topic.done,
       summary: topic.summary?.slice(0, 240), threadId: topic.threadId, sourceThreadIds: topic.sourceThreadIds }))
     const selected = settings && this.store.current(settings.gatewayId)
     return { version: '0.1.0-alpha.9',
@@ -134,6 +150,48 @@ export class TheOneService {
     if (this.store.unreachable().has(id)) return false
     if (reader) return reader === id || mayShare(this.store, scope, id, reader) === undefined
     return true // An explicit directory/history request by the main gateway may inspect its own library.
+  }
+  private routingTopics(settings: GatewaySettings, currentId = this.store.current(settings.gatewayId)) {
+    const reader = currentId && this.visible(currentId) ? currentId : undefined
+    return this.store.contexts().filter(c => this.visible(c.id, reader, settings.linkScope) && (c.id === reader || !this.store.isPrivate(c.id)))
+  }
+  private proposalDecision(proposal: RoutingProposal | undefined, routing: RoutingInput, rules: Decision): Decision | undefined {
+    if (!proposal || proposal.confidence !== 'high' || !!proposal.topicId === !!proposal.newTopic) return
+    let decision: Decision
+    if (proposal.newTopic) {
+      const title = proposal.newTopic.title?.trim()
+      if (!title || title.length > 80) return
+      // Same title means the same topic; never recreate an unavailable/private topic by name.
+      const same = this.store.contexts().filter(t => t.title.trim().toLowerCase() === title.toLowerCase())
+      if (same.length) {
+        if (same.length !== 1 || !routing.contexts.some(t => t.id === same[0].id)) return
+        decision = { action: same[0].id === routing.currentId ? 'KEEP' : routing.currentId ? 'SWAP' : 'MOUNT', contextId: same[0].id, reason: 'main-model-proposal' }
+      } else {
+        const label = normalizeTopicLabel(proposal.newTopic.label)
+        decision = { action: 'CREATE', title, ...(label ? { label } : {}), reason: 'main-model-proposal' }
+      }
+    } else {
+      if (!routing.contexts.some(t => t.id === proposal.topicId)) return
+      decision = { action: proposal.topicId === routing.currentId ? 'KEEP' : routing.currentId ? 'SWAP' : 'MOUNT', contextId: proposal.topicId, reason: 'main-model-proposal' }
+    }
+    if (rules.reason === 'explicit-new-topic') return
+    if (['entity-or-keyword','combined-contexts'].includes(rules.reason) && rules.contextId !== decision.contextId) return
+    if (rules.contextId === decision.contextId && rules.relatedIds) decision.relatedIds = rules.relatedIds
+    return decision
+  }
+  private dispatchCatalog(input: RouteInput) {
+    const settings = this.settings(input.gatewayId)
+    const topics = this.routingTopics(settings).map(t => ({ id: t.id, title: redactRoutingText(t.title).slice(0, 80), label: bubbleLabel(t) }))
+    const catalogVersion = hash(JSON.stringify(topics)), catalog: typeof topics = []
+    let size = 2
+    for (const topic of topics) {
+      const length = JSON.stringify(topic).length + 1
+      if (catalog.length >= 80 || size + length > 12000) break
+      catalog.push(topic); size += length
+    }
+    // Only the caller knows whether it still holds the catalog (a new chat or compaction drops it), so omit it only on its word.
+    const unchanged = input.catalogVersion === catalogVersion
+    return { catalogVersion, catalogTruncated: catalog.length < topics.length, ...(unchanged ? {} : { catalog }) }
   }
   createTopic(title: string, summary?: string) { return this.store.createTopic(title, summary) }
   manageTopic(id: string, change: { title?: string; summary?: string; lastState?: string; private?: boolean; constraints?: string | null; done?: boolean; excluded?: boolean; group?: string | null }) {
@@ -171,33 +229,41 @@ export class TheOneService {
     return operation
   }
   private async computeRoute(input: RouteInput, settings: GatewaySettings, key: string, preview: boolean): Promise<RouteResult> {
+    const started = Date.now()
     let decision: Decision
-    let routingError: string | undefined, receipt: RouterReceipt = { mode: 'rules' }
-    if (input.topicId) { this.context(input.topicId); if (!this.visible(input.topicId)) throw new Error('TOPIC_EXCLUDED'); decision = { action: 'MOUNT', contextId: input.topicId, reason: 'explicit-topic' } }
+    let routingError: string | undefined, receipt: RouterReceipt = { mode: 'rules', source: 'rules', calls: 0 }
+    if (input.topicId) { this.context(input.topicId); if (!this.visible(input.topicId)) throw new Error('TOPIC_EXCLUDED'); decision = { action: 'MOUNT', contextId: input.topicId, reason: 'explicit-topic' }; receipt.source = 'explicit' }
     else {
       const currentId = this.store.current(input.gatewayId)
-      const routingInput: RoutingInput = { text: input.text, contexts: this.listTopics(), currentId, corrections: this.store.corrections(input.gatewayId),
+      const routingInput: RoutingInput = { text: input.text, contexts: this.routingTopics(settings, currentId), currentId, corrections: this.store.corrections(input.gatewayId),
         recent: currentId && this.visible(currentId) ? this.messages(this.topicIds(currentId)).slice(-4).map(m => ({ role: m.role, text: m.text })) : [] }
       routingInput.facts = factCandidates(this.store, settings.linkScope, input.text, [], currentId)
       decision = resolveContext(input.text, routingInput.contexts, currentId)
-      if (settings.routerMode === 'model' && !this.options.router) { routingError = 'MODEL_ROUTER_NOT_CONFIGURED'; receipt.errorCode = routingError }
-      if (settings.routerMode === 'model' && this.options.router && decision.reason !== 'explicit-new-topic') {
+      const proposal = settings.routerMode === 'auto' ? this.proposalDecision(input.proposal, routingInput, decision) : undefined
+      if (proposal) { decision = proposal; receipt.source = 'proposal' }
+      else if (settings.routerMode !== 'rules' && decision.reason !== 'explicit-new-topic') {
         try {
-          const result = await this.options.router.decide(routingInput, this.lifetime.signal)
+          if (!this.options.router) throw new RouterFailure('MODEL_ROUTER_NOT_CONFIGURED')
+          const result = await decideWithReview(this.options.router, routingInput, this.lifetime.signal,
+            { modelSettings: this.runtime.get<RouterModelSettings>('router-model-settings', 'main') })
           decision = result.decision
-          if (decision.contextId && !this.listTopics().some(t => t.id === decision.contextId)) throw new Error('ROUTER_STALE_TOPIC')
-          receipt = { mode: 'llm', model: result.model, elapsedMs: result.elapsedMs, promptTokens: result.usage?.prompt_tokens, completionTokens: result.usage?.completion_tokens }
+          receipt = result.receipt
+          const available = this.routingTopics(settings, currentId)
+          if (decision.contextId && !available.some(t => t.id === decision.contextId)) throw new RouterFailure('ROUTER_STALE_TOPIC')
+          decision.relatedIds = decision.relatedIds?.filter(id => available.some(t => t.id === id))
         } catch (error) {
           this.lifetime.signal.throwIfAborted()
-          routingError = error instanceof Error && /^(ROUTER_|TimeoutError)/.test(error.message) ? error.message.slice(0, 100) : 'ROUTER_UNAVAILABLE'
-          decision = resolveContext(input.text, this.listTopics(), currentId)
-          receipt.errorCode = routingError
+          routingError = error instanceof RouterFailure ? error.code : error instanceof Error && /^(ROUTER_|TimeoutError)/.test(error.message) ? error.message.slice(0, 100) : 'ROUTER_UNAVAILABLE'
+          decision = resolveContext(input.text, this.routingTopics(settings, currentId), currentId)
+          const failureReceipt = (error as { receipt?: RouterReceipt })?.receipt
+          receipt = { ...(failureReceipt ?? receipt), mode: 'rules', source: 'fallback', errorCode: routingError }
         }
       }
     }
-    if (preview) return { inputId: input.inputId, topicId: decision.contextId, decision, ...(routingError ? { routingError } : {}) }
+    receipt.elapsedMs = Date.now() - started
+    if (preview) return { inputId: input.inputId, topicId: decision.contextId, decision, receipt, ...(routingError ? { routingError } : {}) }
     const planned = this.store.plan(key, input.gatewayId, input.gatewayId, { ...decision, ...(decision.action === 'CREATE' ? { folder: settings.workspace } : {}) })
-    const result = { inputId: input.inputId, topicId: planned.decision.contextId, decision: planned.decision, ...(routingError ? { routingError } : {}) }
+    const result = { inputId: input.inputId, topicId: planned.decision.contextId, decision: planned.decision, receipt, ...(routingError ? { routingError } : {}) }
     this.runtime.put('input', key, { ...input, key, result })
     this.store.recordRouteDetail(key, input.text.slice(0, 200), receipt)
     if (result.topicId) this.runtime.put('message', key, { id: key, topicId: result.topicId, role: 'user', text: input.text, at: Date.now(), source: 'gateway' } satisfies Message)
@@ -332,16 +398,16 @@ export class TheOneService {
     const cwd = canonical(input.cwd ?? settings.workspace)
     if (!within(settings.workspace, cwd)) throw new Error('WORKSPACE_OUT_OF_SCOPE')
     const routed = await this.route(input)
-    if (!routed.topicId) return { ...routed, status: 'clarify' as const }
+    if (!routed.topicId) return { ...routed, status: 'clarify' as const, ...this.dispatchCatalog(input) }
     const id = keyOf(input.gatewayId, input.inputId), old = this.runtime.get<Run>('run', id)
-    if (old) { if (pathKey(old.cwd) !== pathKey(cwd)) throw new Error('INPUT_WORKSPACE_CONFLICT'); return old }
+    if (old) { if (pathKey(old.cwd) !== pathKey(cwd)) throw new Error('INPUT_WORKSPACE_CONFLICT'); return { ...old, receipt: routed.receipt, routingError: routed.routingError, ...this.dispatchCatalog(input) } }
     const binding = this.runtime.get<Binding>('binding', routed.topicId)
     if (binding && pathKey(binding.cwd) !== pathKey(cwd)) throw new Error('TOPIC_WORKSPACE_CONFLICT')
     if (!this.options.backend) throw new Error('CODEX_BACKEND_NOT_CONFIGURED')
     const run: Run = { id, gatewayId: input.gatewayId, inputId: input.inputId, topicId: routed.topicId, cwd, text: input.text, status: 'queued', at: Date.now(), updatedAt: Date.now(), owner: this.owner, pid: process.pid, requestedSandbox: settings.sandbox, approvals: [], output: [], delivered: false }
     this.runtime.transaction(() => { if (!this.runtime.get<Run>('run', id)) this.runtime.put('run', id, run) })
     this.pump()
-    return this.run(id)
+    return { ...this.run(id), receipt: routed.receipt, routingError: routed.routingError, ...this.dispatchCatalog(input) }
   }
   runs(gatewayId?: string) { return this.runtime.all<Run>('run').filter(r => !gatewayId || r.gatewayId === gatewayId) }
   run(id: string) { const r = this.runtime.get<Run>('run', id); if (!r) throw new Error('RUN_NOT_FOUND'); return r }
@@ -435,6 +501,7 @@ export class TheOneService {
     await Promise.all([...this.active.values()].map(t => t.promise))
     for (const r of this.runs()) if (r.owner === this.owner && !terminal.has(r.status)) { r.status = 'interrupted'; r.error = 'CONNECTION_CLOSED'; r.approvals = []; this.saveRun(r); this.runtime.unlock(r.id) }
     await this.options.backend?.close()
+    await this.options.router?.close?.()
     this.runtime.close(); this.store.close()
   }
 }

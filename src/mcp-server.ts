@@ -7,6 +7,10 @@ import { readFileSync } from 'node:fs'
 const id = z.string().min(1).max(200)
 const topic = { topicId: id }
 const route = { gatewayId: id, inputId: id, text: z.string().min(1).max(100000), topicId: id.optional() }
+const proposal = z.union([
+  z.object({ topicId: id, confidence: z.enum(['high','low']) }).strict(),
+  z.object({ newTopic: z.object({ title: z.string().min(1).max(80), label: z.string().max(200) }).strict(), confidence: z.enum(['high','low']) }).strict(),
+])
 
 export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
   const server = new McpServer({ name: 'gpt-theone', version: '0.1.0-alpha.9' }, {
@@ -40,6 +44,8 @@ export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
   tool('theone_status', 'Read configured gateways, topic counts and saved runs. No model call.', {}, () => service.status(), true)
   const catalog = () => { if (!service.catalog) throw Error('HISTORY_CATALOG_UNAVAILABLE'); return service.catalog }
   const historyModelSettings = z.object({ model: z.string().min(1).max(200), effort: z.string().min(1).max(30), fast: z.boolean() })
+  tool('theone_router_models', 'List available Codex routing models and the saved routing choice. Metadata only. Default: Luna, low reasoning, standard speed; independent of history settings.', {}, () => service.routerModels(), true)
+  tool('theone_router_configure', 'Save the selected routing model, reasoning and Fast choice. Does not change history or global Codex settings.', { modelSettings: historyModelSettings }, a => service.configureRouterModel(a.modelSettings))
   tool('theone_history_models', 'List current Codex history classification models, supported reasoning and Fast mode, plus the saved choice. Metadata only, no inference. Economy default: Luna, medium reasoning, standard speed.', {}, () => catalog().models(), true)
   tool('theone_history_status', 'Read native history organization progress and saved consent. Does not read conversation contents.', {}, () => catalog().status(), true)
   tool('theone_history_sessions', 'List native chat and folder metadata for selecting history; no message contents or model calls.', {}, () => catalog().sessions(), true)
@@ -52,7 +58,7 @@ export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
   tool('theone_select_topic', 'Select a topic for the next continuation without sending a message or starting work. null returns to automatic routing.', { gatewayId: id, topicId: id.nullable() }, a => service.selectTopic(a.gatewayId, a.topicId))
   tool('theone_configure', 'Enable or update an explicitly selected main chat. workspace must be an existing authorized directory. Default sandbox is read-only; select workspace-write only within user-authorized scope.', {
     gatewayId: id, workspace: z.string().optional(), sandbox: z.enum(['read-only','workspace-write']).optional(), model: z.string().max(200).optional(),
-    effort: z.enum(['low','medium','high','xhigh']).optional(), linkScope: z.enum(['off','workspace','auto']).optional(), enabled: z.boolean().optional(), routerMode: z.enum(['rules','model']).optional(),
+    effort: z.enum(['low','medium','high','xhigh']).optional(), linkScope: z.enum(['off','workspace','auto']).optional(), enabled: z.boolean().optional(), routerMode: z.enum(['rules','model','auto']).optional(),
   }, ({ gatewayId, ...change }) => service.configure(gatewayId, change))
   tool('theone_list_topics', 'List topics. Supply readerTopicId when obtaining context for a worker; privacy and exclusions then apply.', { readerTopicId: id.optional() }, a => service.listTopics(a.readerTopicId), true)
   tool('theone_create_topic', 'Create a named topic without starting a worker.', { title: z.string().min(1).max(80), summary: z.string().max(12000).optional() }, a => ({ topicId: service.createTopic(a.title, a.summary) }))
@@ -67,7 +73,7 @@ export function createMcpServer(service: TheOneService, tasks?: TaskManager) {
   tool('theone_search_history', 'Search locally stored messages. It does not scan all native Codex history. readerTopicId enforces cross-topic sharing.', { query: z.string().min(1).max(1000), readerTopicId: id.optional(), limit: z.number().int().min(1).max(100).default(30) }, a => service.search(a.query, a.readerTopicId, a.limit), true)
   tool('theone_briefing', 'Read bounded topic context and shareable facts, treated as reference data.', { ...topic, scope: z.enum(['off','workspace','auto']).default('auto') }, a => ({ reference: service.briefing(a.topicId, a.scope) }), true)
   tool('theone_route', 'Classify and save an input without executing. preview=true does not mutate. A clarification must be answered before dispatch. Explicit topicId overrides rules.', { ...route, preview: z.boolean().default(false) }, a => service.route(a, a.preview))
-  tool('theone_dispatch', 'Execute the actual authorized request in its own Codex topic thread. May change project files under the configured sandbox. Returns a run id promptly; wait for completion and forward results. Same gatewayId/inputId never starts a second run.', { ...route, cwd: z.string().optional() }, a => service.dispatch(a), false, true)
+  tool('theone_dispatch', 'Execute the authorized request in its Codex topic. topicId is an explicit user selection; proposal is a model suggestion validated by the server. Returns a run, routing receipt and versioned compact catalog; pass the last catalogVersion to omit unchanged entries. Same gatewayId/inputId never starts a second run.', { ...route, proposal: proposal.optional(), catalogVersion: z.string().max(100).optional(), cwd: z.string().optional() }, a => service.dispatch(a), false, true)
   tool('theone_run', 'Read a saved run, final output and exact pending approvals. Reading does not execute work.', { runId: id }, a => service.run(a.runId), true)
   tool('theone_wait', 'Wait up to 20 seconds for a run to finish or request input. Does not imply completion on timeout.', { runId: id, timeoutMs: z.number().int().min(0).max(20000).default(15000) }, a => service.wait(a.runId, a.timeoutMs), true)
   tool('theone_cancel', 'Cancel a queued request or interrupt the actual running Codex turn. Existing file changes are not undone.', { runId: id }, a => service.cancel(a.runId))
