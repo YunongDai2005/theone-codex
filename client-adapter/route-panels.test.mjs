@@ -27,7 +27,7 @@ test('routing panel presents receipts, candidate moves, arbitrary destinations, 
 test('feedback preview is the copied report; GitHub and email links never carry its contents', async () => {
   const mod = await import('./route-panels.mjs').catch(() => ({})); assert.equal(typeof mod.FeedbackPanel, 'function')
   let copied
-  const tree = mod.FeedbackPanel({ React, description: '按钮没反应', change: () => {}, diagnostics: { version: '0.1.0-alpha.9', codexVersion: '1.2.3', routes: [{ source: 'rules', errorCode: null, elapsedMs: 12 }] }, adapterVersion: '0.4.3', copy: report => { copied = report } })
+  const tree = mod.FeedbackPanel({ React, description: '按钮没反应', change: () => {}, diagnostics: { version: '0.1.0', codexVersion: '1.2.3', routes: [{ source: 'rules', errorCode: null, elapsedMs: 12 }] }, adapterVersion: '0.4.3', copy: report => { copied = report } })
   const all = nodes(tree)
   all.find(n => n.type === 'button' && text(n) === '复制内容').props.onClick()
   assert.equal(copied, text(all.find(n => n.type === 'pre')))

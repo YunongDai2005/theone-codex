@@ -27,7 +27,7 @@ export class CodexRouter implements RoutingRouter {
   }
   models() { return this.client.models() }
   async vetMerges(pairs: MergePair[], signal: AbortSignal, settings?: RouterModelSettings) {
-    return (await this.client.execute({ pairs }, { prompt: MERGE_VET_PROMPT, schema: MERGE_VET_SCHEMA, signal, serviceName: 'gpt-theone-merge-vetting',
+    return (await this.client.execute({ pairs }, { prompt: MERGE_VET_PROMPT, schema: MERGE_VET_SCHEMA, signal, serviceName: 'theone-merge-vetting',
       select: models => { const selection = settings ?? this.options.settings ?? recommendedRouterModel(models); if (!selection) throw new RouterFailure('ROUTER_MODEL_SELECTION_REQUIRED'); return validateRouterModel(selection, models) } })).value
   }
   async decide(input: RoutingInput, parentSignal?: AbortSignal, _sessionId?: string, options?: RoutingOptions): Promise<RoutingResult> {
@@ -37,7 +37,7 @@ export class CodexRouter implements RoutingRouter {
     let sent = false
     try {
       const payload = routingPayload(input)
-      const result = await this.client.execute(payload, { prompt: routingPrompt(payload), schema: ROUTING_SCHEMA, signal, serviceName: 'gpt-theone-router',
+      const result = await this.client.execute(payload, { prompt: routingPrompt(payload), schema: ROUTING_SCHEMA, signal, serviceName: 'theone-router',
         select: models => {
           const selection = selected ?? recommendedRouterModel(models)
           if (!selection) throw new RouterFailure('ROUTER_MODEL_SELECTION_REQUIRED')

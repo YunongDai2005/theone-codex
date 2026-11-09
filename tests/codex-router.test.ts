@@ -17,7 +17,7 @@ test('merge vetting uses a separate tool-free structured native turn and the sav
   assert.equal(result.decisions[0].keepId, 'a')
   const turn = log().find(m => m.method === 'turn/start').params
   assert.equal(turn.effort, 'medium'); assert.equal(turn.serviceTier, 'priority'); assert.ok(turn.outputSchema.properties.decisions)
-  assert.equal(log().find(m => m.method === 'thread/start').params.serviceName, 'gpt-theone-merge-vetting')
+  assert.equal(log().find(m => m.method === 'thread/start').params.serviceName, 'theone-merge-vetting')
 }))
 async function fixture(fn: (router: CodexRouter, log: () => any[]) => Promise<void>, options = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'codex-router-'))

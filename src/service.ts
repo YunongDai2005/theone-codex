@@ -84,7 +84,7 @@ export class TheOneService {
   private preroutes: Preroutes
   private topicMerges: TopicMerges
   private suggestionsDirty = true
-  private releaseChecker = new ReleaseChecker('0.1.0-alpha.9')
+  private releaseChecker = new ReleaseChecker('0.1.0')
   checkUpdates(force = false) { return this.releaseChecker.check(force) }
   constructor(private options: { dataDir: string; backend?: WorkerBackend; router?: RoutingRouter; catalog?: CatalogOptions }) {
     mkdirSync(options.dataDir, { recursive: true })
@@ -140,7 +140,7 @@ export class TheOneService {
     this.topicMerges.interrupt()
     return settings
   }
-  status() { return { version: '0.1.0-alpha.9', gateways: this.runtime.all<GatewaySettings>('gateway'), topics: this.listTopics().length, runs: this.runs(), merges: this.store.merges(), groups: this.store.groups() } }
+  status() { return { version: '0.1.0', gateways: this.runtime.all<GatewaySettings>('gateway'), topics: this.listTopics().length, runs: this.runs(), merges: this.store.merges(), groups: this.store.groups() } }
   desktopBind(profileId: string, gatewayId: string, workspace: string, topicId?: string) {
     bounded(profileId, 500, 'DESKTOP_PROFILE_INVALID')
     const existing = this.runtime.get<{ gatewayId: string }>('desktop-main', profileId)
@@ -164,7 +164,7 @@ export class TheOneService {
     const selected = settings && this.store.current(settings.gatewayId)
     const operations = this.topicMerges.operations()
     const shown = new Set(topics.map(t => t.id))
-    return { version: '0.1.0-alpha.9', ...this.runtime.events(settings?.gatewayId ?? null, cursor),
+    return { version: '0.1.0', ...this.runtime.events(settings?.gatewayId ?? null, cursor),
       gateway: settings ? { ...settings, currentTopicId: topics.some(t => t.id === selected) ? selected! : null } : null,
       topics, merges: this.store.merges(), activity: settings ? this.runtime.activity(settings.gatewayId) : [],
       pendingMerges: operations.filter(op => ['queued','executing'].includes(op.state) && shown.has(op.sourceId) && shown.has(op.targetId)),
@@ -490,7 +490,7 @@ export class TheOneService {
       elapsedMs: Number.isFinite(r.receipt?.elapsedMs) && r.receipt!.elapsedMs! >= 0 ? Math.round(r.receipt!.elapsedMs!) : null,
     })) }
   }
-  private statusVersion() { return '0.1.0-alpha.9' }
+  private statusVersion() { return '0.1.0' }
   correct(gatewayId: string, inputId: string, topicId?: string, undo = false) {
     if (!this.settings(gatewayId).enabled) throw Error('GATEWAY_DISABLED')
     if (undo && topicId || !undo && !topicId) throw Error('CORRECTION_TARGET_INVALID')

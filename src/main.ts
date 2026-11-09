@@ -20,7 +20,7 @@ if (mode === 'hook') {
   catch { process.stdout.write('{}') }
 } else if (mode === 'doctor') {
   const client = new AppServer({ worker: true })
-  try { await client.connect(); const result = await client.request('model/list', { limit: 1 }); process.stdout.write(JSON.stringify({ version: '0.1.0-alpha.9', node: process.version, codex: findCodex(), initialized: true, availableModels: result.data?.length ?? 0, dataDir }, null, 2) + '\n') }
+  try { await client.connect(); const result = await client.request('model/list', { limit: 1 }); process.stdout.write(JSON.stringify({ version: '0.1.0', node: process.version, codex: findCodex(), initialized: true, availableModels: result.data?.length ?? 0, dataDir }, null, 2) + '\n') }
   finally { await client.close() }
 } else if (mode === 'serve') {
   // An app-server worker inherits this environment. Do not expose a recursive execution gateway.

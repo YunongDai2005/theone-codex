@@ -56,7 +56,7 @@ export class AppServer extends EventEmitter {
         }
       } catch { this.disconnect(new Error('CODEX_PROTOCOL_INVALID')) }
     })
-    const initialized = await this.request('initialize', { clientInfo: { name: 'gpt-theone', title: 'TheOne', version: '0.1.0-alpha.1' }, ...(this.options.experimentalApi ? { capabilities: { experimentalApi: true } } : {}) })
+    const initialized = await this.request('initialize', { clientInfo: { name: 'theone', title: 'TheOne', version: '0.1.0' }, ...(this.options.experimentalApi ? { capabilities: { experimentalApi: true } } : {}) })
     this.version = /\bcodex(?:_cli_rs)?[\/ ](\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9.-]+)?)/i.exec(initialized.userAgent ?? '')?.[1] ?? 'unknown'
     this.send({ method: 'initialized' })
   }

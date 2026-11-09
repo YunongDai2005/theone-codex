@@ -88,7 +88,7 @@ export class CodexCatalogModel implements CatalogModel {
   private async execute(input: unknown, prompt: string, schema: unknown, parentSignal: AbortSignal, selected?: HistoryModelSettings): Promise<unknown> {
     const signal = AbortSignal.any([parentSignal, AbortSignal.timeout(180000)])
     try {
-      return (await this.client.execute(input, { prompt, schema, signal, serviceName: 'gpt-theone-history', select: models => {
+      return (await this.client.execute(input, { prompt, schema, signal, serviceName: 'theone-history', select: models => {
         const selection = selected ?? recommendedHistoryModel(models)
         if (!selection) throw Error('当前没有可自动选择的经济模型，请在整理历史中选择模型。')
         return validateHistoryModel(selection, models)

@@ -72,7 +72,7 @@ test('feedback diagnostics project only versions, receipt sources, codes and tim
   const topicId = s.createTopic('SECRET_TITLE')
   await s.route({ gatewayId: 'main', inputId: 'SECRET_ID', text: 'SECRET_BODY ' + dir, topicId })
   const diagnostics = await s.feedbackDiagnostics('main', 'SECRET_ID')
-  assert.equal(diagnostics.version, '0.1.0-alpha.9')
+  assert.equal(diagnostics.version, '0.1.0')
   assert.equal(diagnostics.routes[0].source, 'explicit')
   assert.ok('codexVersion' in diagnostics)
   assert.equal(diagnostics.codexVersion, '1.2.3')

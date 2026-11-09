@@ -107,7 +107,7 @@ export class CodexBackend implements WorkerBackend {
       if (threadId) {
         const resumed = await client.request('thread/resume', { ...params, threadId })
         if (resumed.thread?.turns?.some((t: any) => t.status === 'inProgress')) throw new Error('CODEX_THREAD_ALREADY_RUNNING')
-      } else { threadId = (await client.request('thread/start', { ...params, serviceName: 'gpt-theone' })).thread.id }
+      } else { threadId = (await client.request('thread/start', { ...params, serviceName: 'theone' })).thread.id }
       emit({ type: 'started', threadId: threadId! })
       signal.throwIfAborted()
       const sandboxPolicy = sandbox === 'workspace-write'
