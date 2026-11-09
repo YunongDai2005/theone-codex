@@ -1,70 +1,106 @@
-# TheOne for Codex
+<h1 align="center">TheOne for Codex</h1>
 
-把 DSH TheOne 的「一个入口聊多件事，每件事保有独立上下文」迁入本地 Codex。插件当前是 **0.1.0-alpha.9**，客户端适配为 **0.4.2**。以 DSH **0.4.6 / a943701** 为当前界面基线：在「新聊天」下面保留主聊天卡片，卡片下直接显示话题细胞，使用 Codex 原有输入框与回复区。
+<p align="center"><b>Codex 会话多到翻不到？以后只在一个主聊天里说，它自己接上。</b><br>每句话自动路由到对应的那件事，每件事有自己的 Codex 会话和上下文，隔几天回来也能接着做。</p>
 
-已抽取 DSH 的话题、路由、事实、学习记录和持久任务核心，接入真正的 Codex App Server，并提供 Skills + MCP 插件包。没有对原 DSH 源码或聊天数据库做修改。
+<p align="center">
+  <img alt="Codex desktop / CLI" src="https://img.shields.io/badge/Codex-desktop%20%7C%20CLI-1f6feb">
+  <img alt="免费开源 MIT" src="https://img.shields.io/badge/免费开源-MIT-3c873a">
+  <img alt="移植自 DSH TheOne 0.4.6" src="https://img.shields.io/badge/移植自-DSH%20TheOne%200.4.6-a75b1e">
+</p>
 
-## 已实现
+<p align="center">简体中文 | <a href="./README.en.md">English</a></p>
 
-- 话题创建、目录、重命名、摘要、进度、完成状态、分组、约束、隐私、关联与排除；合并、撤销合并和删除。
-- 本地规则路由、指定话题，以及可选 OpenAI 兼容模型路由；候选校验、失败回退、纠错记录与重复输入去重。
-- 每个话题独立 Codex 会话，创建、恢复、排队、取消和手动压缩；同项目与重叠目录串行，排队后重新检查权限。
-- 命令/文件审批及用户问题转发；请求绑定、过期处理、拒绝与取消，不重放已经执行的工具。
-- SQLite 持久化、本地历史搜索、分页阅读、version 1 JSON 导入/导出；来源 ID 去重，导入内容不充当已确认事实。
-- 原生历史整理：首次询问、后期手动启动、会话/文件夹排除、LLM 按轮次分类并复用已有话题；每批最多 16 轮、两段聊天并行分类，已有话题只返回归属和变化字段，逐批生成气泡，支持暂停、重启恢复和增量去重。
-- 有出处的事实记录、版本、查找和撤回；共享范围过滤，已引用事实变化时附带通知。
-- 有期限和次数上限的公共 GitHub PR 只读持续任务，本地通知及暂停、恢复、取消。
-- TheOne 全局导航入口、原生会话话题面板、入口技能、43 个 MCP 工具、可选主聊天 hook、独立打包服务器和本地 marketplace。
-- 本机客户端适配：固定主聊天、重复点击保留草稿、发送后保存原生会话身份；直接移用 DSH 0.4.6 的细胞绘制、名称悬停、详情和所有话题筛选。
-- 细胞操作接入真实话题服务：在主聊天继续、先放一边、空闲话题合并与撤销、停止运行或取消排队；设置支持启用、工作权限和共享范围。
+<p align="center"><img src="./docs/images/topic-cells.png" alt="Codex 侧边栏「新聊天」下面是 TheOne 主聊天卡片，卡片下是话题细胞，当前话题「旅行安排」亮着" width="380"></p>
 
-## 本机使用
+<p align="center"><b>QQ 交流群：1080980184</b>：装不上、分错了、想要什么功能，进群说一声。</p>
 
-完全退出当前 Codex（包括旧版 TheOne），然后双击桌面 **Codex TheOne**。按钮位于「新聊天」下面；首次点击在原生输入框中附上 TheOne 插件，直接输入任务即可，之后回到同一个主聊天。话题细胞来自实际话题库，空库不会显示演示细胞。启动器不会关闭当前对话，原版安装和快捷方式保留。
+---
 
-首次点击还会显示“整理以前的聊天”：选择模型、思考强度及参与的会话后开始，或暂时跳过。默认优先 **GPT-6 Luna＋中度思考＋标准速度**，可点亮 **⚡ 快速** 加速并增加消耗。模型及能力来自当前 Codex 的可用目录；没有 Luna 经济选项时要求手动选择，已保存的模型不可用时不会悄悄换模型。设置只用于历史整理，不修改 Codex 全局模型；点击开始后保存，重启仍沿用。
+TheOne 原本是 [DeepSeek Harness（DSH）](https://github.com/YunongDai2005/dsh-theone) 的插件。这是它的 Codex 版本：话题、路由、事实记录和细胞界面都从 DSH TheOne 0.4.6 移植过来，模型调用改用你现有的 Codex 登录。
 
-以后右键 TheOne → 设置 → **整理历史**，也可从“管理话题”打开并更换模型；运行中先暂停。整理使用现有 Codex 登录，会消耗模型额度。完成的批次直接形成气泡，原聊天不修改；选择气泡后继续使用原生输入框。整理只在本地插件进程运行时推进，暂停或关闭后已完成批次保留。
+## 它解决什么
 
-alpha.9 会在两批同时提出新话题时，用同一模型做一次简短的归属核对，减少重复气泡；这次调用也计入每轮 64 次请求的限制。仍有可整理积压时约一秒后续跑，空闲或失败后按正常间隔检查。默认仍是 Luna、中度思考、快速关闭；本次提速不靠提高模型档位。
+- 「之前聊过的那个在哪来着？」：Codex 侧边栏里几十个会话，旧的找不到。
+- 「懒得新建了，就在这儿接着问吧」：一个会话越聊越杂，压缩一次细节就没了。
+- 「我不是跟你说过了吗？」：换了会话，AI 不记得之前定下的东西。
 
-这是针对 Windows 客户端 `26.1103.4239.0` 的本地适配副本，原版升级后需要重新适配。构建、验证、启动和恢复说明见 [客户端适配](docs/client-adapter.md)。
+**TheOne 的做法：** 你只在一个主聊天里说话。TheOne 判断每条消息属于哪件事（对话路由），把它送进那件事自己的 Codex 会话；新的事就新开一个话题。结果回到主聊天，你看到的始终是一个对话。
 
-## 构建与运行
+## 它怎么做：对话路由
 
-需要 Node.js 24+、npm 和已登录的 Codex CLI。本机验收版本为 Node 24.21.0、Codex CLI 0.167.0-alpha.3.2。
+每条消息按这个顺序决定去哪个话题：
 
-```powershell
-npm ci --ignore-scripts
-npm run check
-npm run doctor
+1. **你点名了话题**：照你说的。
+2. **预路由**：你一按发送，TheOne 就在后台开始路由，和主模型的思考同时进行。等主模型把任务交过来时，结果通常已经出来了。
+3. **主模型的判断**：主聊天的模型看过整段对话，「继续」「那个」这类指代它最清楚。它有把握、话题也对得上时，直接采用，不额外调用模型。
+4. **路由模型**：用你的 Codex 登录调一次模型判断，判断不稳时再复核一次。路由提示词、校验和复核规则与 DSH 版相同。
+5. **本地规则**：模型调用失败时兜底。
+
+路由模型默认用 GPT-6 Luna、低思考强度，可以在设置里换。实测见 [路由延迟记录](evidence/router-latency-luna-low.json)。
+
+## 功能
+
+- **每件事一个独立的 Codex 会话**：上下文互不干扰；同一个项目的话题按顺序排队，不会同时改同一批文件。
+- **话题细胞**：「新聊天」下面是主聊天卡片，卡片下的细胞就是你的话题。正在干活、等你回答、刚回答完的细胞会显示名字；其余的鼠标靠近才显示。拖一个细胞到另一个上就是合并，把消息拖到别的细胞上就是改派。
+- **分错了能改**：改派只修正归属，不会悄悄撤销已经做过的改动。疑似重复的话题会用虚线连起来，由你决定要不要合并。
+- **一次性插问**：「1 英寸是多少厘米」这类顺口一问，回答完自动收起，主聊天回到原来的话题。
+- **有出处的事实记录**：定下来的数值和决定会记下来源和版本；被引用的事实变了，相关话题会收到通知。
+- **整理以前的聊天**：经你同意后，用你选的模型读一遍选中的旧会话，整理成话题细胞。只读不改，原会话原样保留。
+- **隐私**：话题可以设为私密（不共享给其他话题）或排除（不参与路由和检索）。
+- **用你现有的 Codex 登录**：不用另填 API Key。会消耗你 Codex 账户的模型额度。
+
+## 安装
+
+需要 Codex（桌面版或 CLI）和 Node.js 24 以上。
+
+**只装插件（桌面版和 CLI 都能用）：**
+
+```bash
+codex plugin marketplace add YunongDai2005/theone-codex --ref marketplace
 ```
 
-构建产物是 `release/gpt-theone`，连同依赖打包，不需要在安装副本中再执行 npm install。生成 ZIP：
-
-```powershell
-powershell -NoProfile -File scripts/package.ps1
+```bash
+codex plugin add theone@theone-codex
 ```
 
-从本机目录安装（这两条会修改使用者自己的 Codex 插件配置）：
+装好后重启 Codex。桌面版的 TheOne 入口在「探索 / 更多」里，固定后进入侧边栏；项目聊天里也可以用 `$theone`。
 
-```powershell
-codex plugin marketplace add D:/doc/ChatGPT/gpt-theone/release
-codex plugin add gpt-theone@theone-local
+**完整界面（Windows 桌面版）：** 想要「新聊天」下面的主聊天卡片和话题细胞，还需要装客户端适配。它会在本机复制一份 Codex 桌面版再打补丁，原版安装和快捷方式保留不动：
+
+```bash
+git clone https://github.com/YunongDai2005/theone-codex.git
 ```
 
-安装或更新后重启桌面。在当前桌面版本中，TheOne 全局入口先出现在「探索 / 更多」中，固定后进入应用总导航。点击它时，插件请求打开预填启用内容的 **Codex 原生聊天草稿**，补充任务后发送。在原生会话面板中打开「TheOne 话题」可以创建或选择话题，将引用加入原来的输入框。也可在项目聊天中使用 `$theone`。
+```bash
+cd theone-codex && npm ci --ignore-scripts && npm run build && npm run client:install
+```
 
-**仅安装插件与客户端适配的区别：** `global` 入口的固定与排序控制应用总导航；公开扩展协议没有「新聊天」相邻位置的插槽。上面的本机客户端适配单独实现了这个位置，不能只靠安装插件获得。此前的诊断保留在 [桌面入口记录](evidence/desktop-entrypoint-diagnosis.json)。
+之后从桌面的 **Codex TheOne** 快捷方式启动。客户端适配针对 Codex 桌面版 `26.1103.4239.0`，原版升级后需要重新运行 `npm run client:install`。详见 [客户端适配](docs/client-adapter.md)。
 
-插件自身的原生草稿桥接通过了模拟宿主浏览器验收。客户端适配的实际窗口检查另见 [client-adapter-runtime.json](evidence/client-adapter-runtime.json)，两者不混作同一种证据。宿主未声明 `openai/message` 时，插件入口明确提示不支持，不替换成独立聊天页面。插件安装检查见 [local-installation-ui.json](evidence/local-installation-ui.json)，验证边界见 [实现记录](docs/implementation-status.md)。接口依据：[Plugin Extensions](https://developers.openai.com/plugins/build/extensions)，打包依据：[插件结构](https://developers.openai.com/plugins/build/plugins) 和 [本地 MCP 配置](https://developers.openai.com/plugins/deploy/desktop-only)。
+## 和 DSH 版的区别
 
-默认使用本地规则分类及 Codex 已有登录；执行沙箱默认只读。模型分类接口、数据目录、可选 hook 的配置见 [运行说明](docs/runtime.md)。hook 默认未启用；它是指定聊天的提醒入口，宿主仍需要 [审阅并信任 hook](https://learn.chatgpt.com/docs/hooks)。
+| | DSH 版 | Codex 版 |
+|---|---|---|
+| 模型 | DSH 里配置的服务商 | 你的 Codex 登录 |
+| 路由的时机 | 路由完才开始回答 | 和主模型思考同时进行 |
+| 主模型参与路由 | 否 | 是，有把握时直接采用 |
+| 消息桥（微信、Telegram、iMessage） | 有 | 没有（依赖 DSH 服务端） |
+| 工具卡片镜像 | 有 | 没有（DSH 宿主特有） |
 
-## 验证范围与后续
+完整的能力表见 [实现记录](docs/implementation-status.md)。
 
-自动测试覆盖迁入核心和新适配器；真实验证记录见 [实现与验证记录](docs/implementation-status.md)。
+## 常见问题
 
-当前输出由主聊天读取 MCP 结果后呈现。细胞侧栏已接入；DSH 原生工具卡片镜像、完整候选路由事件流、排队合并、重复话题建议、前台指代、临时插问返回、消息桥和自动更新仍需迁移。持续任务依赖本地进程存活。当前 alpha 不能按 DSH 全功能等价版发布。
+**会多花额度吗？** 主模型有把握时不额外调用。需要路由模型时，每条消息多一次低思考强度的调用；整理旧聊天按你选的模型计费。
 
-源码基线是 DSH TheOne `0.4.5` 的开发分支快照 `fe436d005be92541ceb82495eacf83d7230c2488`。保留原 MIT 许可和来源说明：[UPSTREAM.md](UPSTREAM.md)。准备阶段的 [源码审阅](docs/source-audit.md)、[移植方案](docs/port-plan.md)、[适配层约定](docs/adapter-contracts.md)、[完整验收清单](docs/acceptance.md) 继续作为后续规格；当前状态以实现记录为准。
+**客户端适配安全吗？** 它只改本机复制出来的那一份 Codex 桌面版，不改原版安装，也不改你的聊天数据。不想用可以只装插件。
+
+**这是 OpenAI 官方的吗？** 不是。TheOne 是独立的开源项目，与 OpenAI 无关。
+
+## 验证
+
+`npm run check`：类型检查、全部单元测试和构建。客户端适配另有 `npm run client:test`。每次发版的测试结果写在 [Releases](https://github.com/YunongDai2005/theone-codex/releases) 里。
+
+## 来源和许可
+
+MIT。核心代码移植自 [YunongDai2005/dsh-theone](https://github.com/YunongDai2005/dsh-theone)，来源和对应提交见 [UPSTREAM.md](UPSTREAM.md)。
