@@ -1,27 +1,32 @@
 {
-  "builtAt": "2026-11-09T14:18:50.896Z",
-  "adapterVersion": "0.4.2",
+  "builtAt": "2026-11-09T17:51:43.228Z",
+  "adapterVersion": "0.4.3",
   "sourceApp": "C:/Program Files/WindowsApps/OpenAI.Codex_26.1103.4239.0_x64__2p2nqsd0c76g0/app",
-  "clientApp": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\desktop-client\\26.1103.4239.0-theone-0.4.2\\app",
+  "clientApp": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\desktop-client\\26.1103.4239.0-theone-0.4.3\\app",
   "originalClientPreserved": true,
   "executable": {
     "sourceSha256": "5586707af6624c04959ba2c5b4ad6d216a1d8ed17c04937a757495649de44b92",
-    "adaptedSha256": "79db11e46ee5a4359f681a0c933b72e6fffd633d134efbf1258997e1e712d3bd",
+    "adaptedSha256": "95733754f5b1720d4139031393e745bfa345cc598cd9c33e0d5462a285b268d9",
     "changedResource": "ASAR integrity root hash",
     "localModifiedBuild": true
   },
   "archive": {
     "originalHeaderHash": "8494bdea297b06ca292b71e7cf4b3f395e70a01e0a70fbae2219f620947d8231",
-    "headerHash": "affa5d1e6735f5c7ec302998969ff11899868148905d8499b5d7a3668b496cd7",
+    "headerHash": "5e7a0015747b52afc69985a1cb5d3b44b9a445d7cb618bc8cff24efcead25b8d",
     "changes": [
       {
         "path": "webview/assets/async/499225.6d2e47bea2.js",
-        "size": 1418260,
-        "sha256": "7e28fc8bc1d1e1ca157bae6b5d91286e876ac42911dcc05b841628f2e7213065"
+        "size": 1427865,
+        "sha256": "7980c0f378bf569aca06016244f622173f4645680273ec094ac0294c45f5dd85"
+      },
+      {
+        "path": "webview/assets/async/182735.bb2cb0d2af.js",
+        "size": 8274257,
+        "sha256": "1dacb2f16c0c605ef49a8da1b7935c56e817d52a5e928e71f2ff9873932c25b1"
       }
     ]
   },
-  "rendererSha256": "7e28fc8bc1d1e1ca157bae6b5d91286e876ac42911dcc05b841628f2e7213065",
+  "rendererSha256": "7980c0f378bf569aca06016244f622173f4645680273ec094ac0294c45f5dd85",
   "runtimeSecurityFlagsChanged": false,
   "uiPlacement": "TheOne immediately after the native New chat row, Codex sidebar only",
   "action": "persistent native main draft/chat; unchanged DSH 0.4.6 topic cells and gestures; native MCP topic controls; no automatic send",

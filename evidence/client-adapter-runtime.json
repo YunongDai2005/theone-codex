@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-11-09T14:21:42.927Z",
-  "processId": 79680,
-  "executable": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\desktop-client\\26.1103.4239.0-theone-0.4.2\\app\\ChatGPT.exe",
+  "checkedAt": "2026-11-09T17:53:51.463Z",
+  "processId": 81536,
+  "executable": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\desktop-client\\26.1103.4239.0-theone-0.4.3\\app\\ChatGPT.exe",
   "isolatedProfile": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\client-runtime-check\\profile",
-  "adapterVersion": "0.4.2",
-  "isolatedTopicData": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\client-runtime-check\\topic-fixture-5Y7aIp",
+  "adapterVersion": "0.4.3",
+  "isolatedTopicData": "D:\\doc\\ChatGPT\\gpt-theone\\.theone\\client-runtime-check\\topic-fixture-CwOmek",
   "topicTransport": "isolated real MCP server through test-only bridge; native navigation retained",
   "runtimeLaunchVerified": true,
   "buttonPresent": true,
@@ -12,9 +12,9 @@
   "nativeDraftVerified": true,
   "modelMessageSent": false,
   "brandAppearance": {
-    "height": 70.11431121826172,
+    "height": 70.22123718261719,
     "background": "rgb(29, 42, 55)",
-    "border": "color(srgb 0.352941 0.494902 0.616471)",
+    "border": "rgb(52, 77, 100)",
     "radius": "12px",
     "shadow": "rgba(128, 186, 233, 0.14) 0px 0px 22px 4px",
     "wordmark": "TheOne",
@@ -22,19 +22,24 @@
     "reducedMotion": false
   },
   "originalCellAnimationVerified": true,
-  "nativeDraftText": "TheOne for Codex ",
-  "brandActiveInDraft": "true",
-  "repeatedClickPreservesDraft": true,
-  "upstreamCellsVerified": true,
-  "nativeMcpTopicDirectoryVerified": true,
-  "popupContrast": {
-    "text": "rgb(255, 255, 255)",
-    "background": "rgb(36, 37, 40)",
-    "ratio": 15.325323893737774
+  "cellMotion": {
+    "reducedMotion": false,
+    "samples": 40,
+    "distinct": 40,
+    "cxSpan": 0.28200000000000003,
+    "cySpan": 0.29300000000000104,
+    "rSpan": 0.06400000000000006,
+    "renderedPx": 20
   },
-  "topicSelectionPreservesDraft": true,
-  "idleMergeVerified": true,
-  "unmergeVerified": true,
-  "nativeSettingsVerified": true,
-  "rightClickSettingsVerified": true
+  "foamMotion": {
+    "cells": 42,
+    "distinctFrames": 20,
+    "firstFrame": [
+      "|M183.30 86.95C183.30 87.70 183.26 88.45 183.17 89.20C183.07 ",
+      "|M162.46 42.39C162.04 43.20 161.61 43.93 161.21 44.65C160.81 "
+    ]
+  },
+  "nativeDraftText": "TheOne for Codex ",
+  "brandActiveInDraft": "false",
+  "error": "The main entry did not stay active in the native draft"
 }

@@ -88,6 +88,26 @@ try {
   await page.waitForTimeout(1200)
   const afterAnimation = await page.evaluate(() => document.querySelector('[data-theone-native-entry] [data-part="membrane"]')?.getAttribute('d'))
   report.originalCellAnimationVerified = !!beforeAnimation && beforeAnimation !== afterAnimation
+  // A changed path alone does not prove visible motion: sample the nucleus for two seconds.
+  report.cellMotion = await page.evaluate(async () => {
+    const nucleus = () => document.querySelector('[data-theone-native-entry] [data-part="nucleus"]')
+    const samples = []
+    for (let i = 0; i < 40; i++) { const n = nucleus(); if (n) samples.push([+n.getAttribute('cx'), +n.getAttribute('cy'), +n.getAttribute('r')]); await new Promise(r => setTimeout(r, 50)) }
+    const span = k => samples.length ? Math.max(...samples.map(s => s[k])) - Math.min(...samples.map(s => s[k])) : 0
+    return { reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches, samples: samples.length,
+      distinct: new Set(samples.map(s => s.join())).size, cxSpan: span(0), cySpan: span(1), rSpan: span(2),
+      renderedPx: document.querySelector('[data-theone-native-entry] .theone-symbol')?.getBoundingClientRect().width ?? 0 }
+  })
+  // The topic cells under the card should breathe and drift like DSH's, not sit still.
+  report.foamMotion = await page.evaluate(async () => {
+    const cells = () => [...document.querySelectorAll('.theone-foam [data-part="cells"] > g')]
+    const shot = () => cells().map(g => (g.getAttribute('transform') ?? '') + '|' + (g.querySelector('path')?.getAttribute('d')?.slice(0, 60) ?? ''))
+    const frames = []
+    for (let i = 0; i < 20; i++) { frames.push(shot()); await new Promise(r => setTimeout(r, 100)) }
+    return { cells: frames[0].length, distinctFrames: new Set(frames.map(f => f.join('#'))).size, firstFrame: frames[0].slice(0, 2) }
+  })
+  console.log(JSON.stringify({ event: 'foam-motion', ...report.foamMotion }))
+  console.log(JSON.stringify({ event: 'cell-motion', ...report.cellMotion }))
   if (report.brandAppearance.height < 64 || report.brandAppearance.wordmark !== 'TheOne' || report.brandAppearance.radius !== '12px') throw new Error('DSH card dimensions or wordmark did not render')
   if (!report.brandAppearance.reducedMotion && !report.originalCellAnimationVerified) throw new Error('The copied DSH cell animation is not running')
   // Keep account credentials and user topics in their normal home. Only this
