@@ -1,0 +1,528 @@
+{
+  "measuredAt": "2026-11-09T17:42:56.387Z",
+  "settings": {
+    "preference": "Luna",
+    "effort": "low",
+    "fast": false
+  },
+  "timeoutMs": 15000,
+  "method": "nearest-rank waitMs in milliseconds; rules and completed caches may be zero; failures reported separately; worker stub only",
+  "groups": [
+    {
+      "delaySeconds": 1,
+      "all": {
+        "count": 8,
+        "measured": 8,
+        "failures": 0,
+        "p50": 4123,
+        "p90": 10537
+      },
+      "successfulModelRoutes": {
+        "count": 7,
+        "measured": 7,
+        "failures": 0,
+        "p50": 5046,
+        "p90": 10537
+      },
+      "sources": {
+        "preroute": 8
+      }
+    },
+    {
+      "delaySeconds": 3,
+      "all": {
+        "count": 8,
+        "measured": 8,
+        "failures": 0,
+        "p50": 1477,
+        "p90": 6497
+      },
+      "successfulModelRoutes": {
+        "count": 7,
+        "measured": 7,
+        "failures": 0,
+        "p50": 1632,
+        "p90": 6497
+      },
+      "sources": {
+        "preroute": 8
+      }
+    },
+    {
+      "delaySeconds": 5,
+      "all": {
+        "count": 8,
+        "measured": 8,
+        "failures": 0,
+        "p50": 0,
+        "p90": 7980
+      },
+      "successfulModelRoutes": {
+        "count": 7,
+        "measured": 7,
+        "failures": 0,
+        "p50": 260,
+        "p90": 7980
+      },
+      "sources": {
+        "preroute": 8
+      }
+    }
+  ],
+  "runs": [
+    {
+      "name": "continuation",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "cold",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 0,
+      "dispatchMs": 12,
+      "modelCalls": 0,
+      "model": null,
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "short-continuation"
+      }
+    },
+    {
+      "name": "named-topic",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 5046,
+      "dispatchMs": 5054,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "SWAP",
+        "contextId": "camp",
+        "reason": "明确回到周末露营计划并补充雨天方案。"
+      }
+    },
+    {
+      "name": "new-task",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 8913,
+      "dispatchMs": 8923,
+      "modelCalls": 2,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "吉他入门计划",
+        "label": "吉他",
+        "reason": "这是与现有话题无关的新学习计划。",
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\2",
+        "contextId": "56a3bceb-4f0b-4fc0-b8f1-05e917679480"
+      }
+    },
+    {
+      "name": "code-followup",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 5889,
+      "dispatchMs": 5897,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "router",
+        "reason": "延续 TheOne 路由 proposal 的冲突测试"
+      }
+    },
+    {
+      "name": "missing-history",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 10537,
+      "dispatchMs": 10544,
+      "modelCalls": 2,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "MOUNT",
+        "contextId": "book",
+        "reason": "unclear-settled",
+        "alternateIds": [
+          "camp",
+          "router"
+        ]
+      }
+    },
+    {
+      "name": "aside",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 4123,
+      "dispatchMs": 4132,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "英寸厘米换算",
+        "label": "换算",
+        "reason": "独立的一次性单位换算问题，与现有话题无关。",
+        "aside": true,
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\5",
+        "contextId": "8dac561d-d2d8-4eb1-98b5-974de696f451"
+      }
+    },
+    {
+      "name": "multiple-topics",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 3642,
+      "dispatchMs": 3650,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "修改书稿中的户外场景，露营经历作为参考。",
+        "relatedIds": [
+          "camp"
+        ]
+      }
+    },
+    {
+      "name": "negated-switch",
+      "round": 1,
+      "delaySeconds": 1,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 3141,
+      "dispatchMs": 3149,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "继续修改书稿第一章。"
+      }
+    },
+    {
+      "name": "continuation",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 0,
+      "dispatchMs": 7,
+      "modelCalls": 0,
+      "model": null,
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "short-continuation"
+      }
+    },
+    {
+      "name": "named-topic",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 1477,
+      "dispatchMs": 1484,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "SWAP",
+        "contextId": "camp",
+        "reason": "明确回到周末露营计划，补充雨天方案。"
+      }
+    },
+    {
+      "name": "new-task",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 6250,
+      "dispatchMs": 6260,
+      "modelCalls": 2,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "吉他入门练习计划",
+        "label": "吉他",
+        "reason": "提出独立的新学习计划，目标和时长明确。",
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\10",
+        "contextId": "1d759462-2e3d-46f9-863a-1f42543d8e61"
+      }
+    },
+    {
+      "name": "code-followup",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 1366,
+      "dispatchMs": 1373,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "router",
+        "reason": "询问 TheOne proposal 的冲突测试分支，属于路由开发。"
+      }
+    },
+    {
+      "name": "missing-history",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 6497,
+      "dispatchMs": 6505,
+      "modelCalls": 2,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "继续昨天那个方案，用之前的链接。",
+        "reason": "unclear-new",
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\12",
+        "contextId": "05f8e2b6-261f-463f-aa9a-7b99813a6bb9"
+      }
+    },
+    {
+      "name": "aside",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 1632,
+      "dispatchMs": 1640,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "英寸厘米换算",
+        "label": "换算",
+        "reason": "一次即可回答的单位换算小问题，与现有话题无关。",
+        "aside": true,
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\13",
+        "contextId": "10741075-4c13-4e32-b197-1dc993d365d1"
+      }
+    },
+    {
+      "name": "multiple-topics",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 1717,
+      "dispatchMs": 1726,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "把露营经历用于修改书稿户外场景，书稿是实际任务。",
+        "relatedIds": [
+          "camp"
+        ]
+      }
+    },
+    {
+      "name": "negated-switch",
+      "round": 1,
+      "delaySeconds": 3,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 1136,
+      "dispatchMs": 1144,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "明确继续书稿第一章。"
+      }
+    },
+    {
+      "name": "continuation",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 0,
+      "dispatchMs": 7,
+      "modelCalls": 0,
+      "model": null,
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "short-continuation"
+      }
+    },
+    {
+      "name": "named-topic",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 0,
+      "dispatchMs": 6,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "SWAP",
+        "contextId": "camp",
+        "reason": "明确回到周末露营计划并补充雨天方案。"
+      }
+    },
+    {
+      "name": "new-task",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 4989,
+      "dispatchMs": 4996,
+      "modelCalls": 2,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "吉他入门练习计划",
+        "label": "吉他学习",
+        "reason": "提出独立且信息完整的新学习计划。",
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\18",
+        "contextId": "10719f45-4187-4216-9144-ef01e77bbb61"
+      }
+    },
+    {
+      "name": "code-followup",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 260,
+      "dispatchMs": 267,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "router",
+        "reason": "询问 TheOne proposal 的冲突测试，属于路由开发话题。"
+      }
+    },
+    {
+      "name": "missing-history",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 7980,
+      "dispatchMs": 7989,
+      "modelCalls": 2,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "继续昨天那个方案，用之前的链接。",
+        "reason": "unclear-new",
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\20",
+        "contextId": "0446c61a-a5b1-429b-a1d9-ec63a0b4f986"
+      }
+    },
+    {
+      "name": "aside",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 0,
+      "dispatchMs": 9,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "CREATE",
+        "title": "英寸换算",
+        "label": "换算",
+        "reason": "独立的一次性单位换算问题。",
+        "aside": true,
+        "historyIndependent": true,
+        "folder": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\theone-preroute-measure-pi1UTz\\21",
+        "contextId": "bf70a07a-b1a8-4bde-b2cf-63aca50ab8fd"
+      }
+    },
+    {
+      "name": "multiple-topics",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 821,
+      "dispatchMs": 828,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "主要任务是修改书稿场景，露营经历作为参考。",
+        "relatedIds": [
+          "camp"
+        ]
+      }
+    },
+    {
+      "name": "negated-switch",
+      "round": 1,
+      "delaySeconds": 5,
+      "connection": "reused-or-reconnected",
+      "ok": true,
+      "source": "preroute",
+      "waitMs": 0,
+      "dispatchMs": 7,
+      "modelCalls": 1,
+      "model": "gpt-6-luna",
+      "decision": {
+        "action": "KEEP",
+        "contextId": "book",
+        "reason": "明确继续修改书稿第一章。"
+      }
+    }
+  ]
+}
